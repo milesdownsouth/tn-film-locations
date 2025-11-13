@@ -4,11 +4,21 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createClient as createServerClient } from '@supabase/ssr';
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient();
+    // Create an unauthenticated Supabase client to test as anonymous user
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() { return []; },
+          setAll() {},
+        },
+      }
+    );
     const results: any = {
       timestamp: new Date().toISOString(),
       checks: {}

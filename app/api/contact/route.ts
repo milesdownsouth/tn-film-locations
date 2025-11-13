@@ -4,13 +4,25 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createClient as createServerClient } from '@supabase/ssr';
 import { Resend } from 'resend';
 import { checkRateLimit, getClientIp } from '@/lib/rate-limiter';
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient();
+    // Create an unauthenticated Supabase client for public form submission
+    // This ensures we're using the anon role without any cookie-based auth
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() { return []; },
+          setAll() {},
+        },
+      }
+    );
+
     const body = await request.json();
 
     // SPAM PROTECTION: Check honeypot
