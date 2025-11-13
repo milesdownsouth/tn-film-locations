@@ -29,11 +29,24 @@ export default function HomeContent({ featuredLocations }: HomeContentProps) {
 
   return (
     <div>
-      {/* Hero Section */}
-      <section className="relative h-[500px] bg-cover bg-center" style={{
-        backgroundImage: 'linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(https://images.unsplash.com/photo-1542204165-65bf26472b9b?q=80&w=2000&auto=format&fit=crop)'
-      }}>
-        <div className="absolute inset-0 flex flex-col items-center justify-center px-4">
+      {/* Hero Section with Video Background */}
+      <section className="relative h-[500px] overflow-hidden">
+        {/* Video Background */}
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover"
+        >
+          <source src="/hero-video.mp4" type="video/mp4" />
+        </video>
+
+        {/* Dark Overlay for Text Readability */}
+        <div className="absolute inset-0 bg-black bg-opacity-50"></div>
+
+        {/* Content */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center px-4 z-10">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white text-center mb-8">
             VENUE AND FILM LOCATIONS IN TENNESSEE
           </h1>
