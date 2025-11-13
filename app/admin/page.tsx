@@ -98,6 +98,30 @@ export default async function AdminPage() {
             </div>
           </Link>
 
+          <Link href="/admin/contacts">
+            <div className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow cursor-pointer">
+              <h2 className="text-2xl font-bold text-black mb-2">Contact Submissions</h2>
+              <p className="text-gray-600">
+                View and manage contact form submissions. Update status and add notes.
+              </p>
+              <div className="mt-4 text-[#C41E3A] font-bold uppercase">
+                View Contacts →
+              </div>
+            </div>
+          </Link>
+
+          <Link href="/admin/settings">
+            <div className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow cursor-pointer">
+              <h2 className="text-2xl font-bold text-black mb-2">Site Settings</h2>
+              <p className="text-gray-600">
+                Configure site settings including contact email notifications.
+              </p>
+              <div className="mt-4 text-[#C41E3A] font-bold uppercase">
+                Configure Settings →
+              </div>
+            </div>
+          </Link>
+
           <div className="bg-white rounded-lg shadow p-6 opacity-60">
             <h2 className="text-2xl font-bold text-black mb-2">Manage Users</h2>
             <p className="text-gray-600">

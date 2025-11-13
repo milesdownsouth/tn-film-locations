@@ -5,6 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { Resend } from 'resend';
 
 export async function POST(request: NextRequest) {
   try {
@@ -61,6 +62,53 @@ export async function POST(request: NextRequest) {
         { error: 'Failed to submit contact form' },
         { status: 500 }
       );
+    }
+
+    // Send email notification (don't fail if this fails)
+    try {
+      // Fetch contact email from settings
+      const { data: settingData } = await supabase
+        .from('admin_settings')
+        .select('setting_value')
+        .eq('setting_key', 'contact_email')
+        .single();
+
+      const recipientEmail = settingData?.setting_value || 'admin@tnfilmlocations.com';
+
+      // Send email if Resend API key is configured
+      if (process.env.RESEND_API_KEY) {
+        const resend = new Resend(process.env.RESEND_API_KEY);
+
+        await resend.emails.send({
+          from: 'TN Film Locations <noreply@tnfilmlocations.com>',
+          to: recipientEmail,
+          subject: `New Contact Form Submission from ${sanitizedData.name}`,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h2 style="color: #C41E3A;">New Contact Form Submission</h2>
+              <p>You have received a new contact form submission from your TN Film Locations website.</p>
+
+              <div style="background-color: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                <p><strong>Name:</strong> ${sanitizedData.name}</p>
+                <p><strong>Email:</strong> ${sanitizedData.email}</p>
+                <p><strong>Phone:</strong> ${sanitizedData.phone}</p>
+                <p><strong>Company/Production:</strong> ${sanitizedData.company}</p>
+                <p><strong>Message:</strong></p>
+                <p style="white-space: pre-wrap;">${sanitizedData.message}</p>
+              </div>
+
+              <p style="color: #666; font-size: 14px;">
+                This email was sent from your TN Film Locations contact form.
+                <br>
+                Submitted on: ${new Date().toLocaleString()}
+              </p>
+            </div>
+          `,
+        });
+      }
+    } catch (emailError) {
+      // Log email error but don't fail the request
+      console.error('Error sending email notification:', emailError);
     }
 
     return NextResponse.json(

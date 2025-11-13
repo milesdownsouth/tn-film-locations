@@ -20,7 +20,8 @@
     "jszip": "^3.10.1",
     "next": "16.0.2",
     "react": "19.2.0",
-    "react-dom": "19.2.0"
+    "react-dom": "19.2.0",
+    "resend": "^6.4.2"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
