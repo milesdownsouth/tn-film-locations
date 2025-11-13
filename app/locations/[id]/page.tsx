@@ -15,6 +15,12 @@ interface LocationDetailResponse {
   relatedLocations: Partial<Location>[];
 }
 
+interface PullSheet {
+  id: string;
+  name: string;
+  location_count: number;
+}
+
 export default function LocationDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const [isSaved, setIsSaved] = useState(false);
@@ -24,6 +30,9 @@ export default function LocationDetailPage({ params }: { params: Promise<{ id: s
   const [error, setError] = useState<string | null>(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [showPullSheetModal, setShowPullSheetModal] = useState(false);
+  const [pullSheets, setPullSheets] = useState<PullSheet[]>([]);
+  const [loadingPullSheets, setLoadingPullSheets] = useState(false);
 
   // Fetch location data
   useEffect(() => {
@@ -140,6 +149,72 @@ export default function LocationDetailPage({ params }: { params: Promise<{ id: s
     } catch (err) {
       console.error('Error downloading ZIP:', err);
       alert('Failed to download images. Please try again.');
+    }
+  };
+
+  const handleAddToPullSheet = async () => {
+    setLoadingPullSheets(true);
+    setShowPullSheetModal(true);
+
+    try {
+      const response = await fetch('/api/pull-sheets');
+      if (response.status === 401) {
+        alert('Please log in to add locations to pull sheets');
+        window.location.href = '/auth/login';
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch pull sheets');
+      }
+
+      const data = await response.json();
+      setPullSheets(data.pull_sheets || []);
+    } catch (err) {
+      console.error('Error fetching pull sheets:', err);
+      alert('Failed to load pull sheets. Please try again.');
+      setShowPullSheetModal(false);
+    } finally {
+      setLoadingPullSheets(false);
+    }
+  };
+
+  const handleSelectPullSheet = async (pullSheetId: string) => {
+    try {
+      // Get the pull sheet data
+      const response = await fetch(`/api/pull-sheets/${pullSheetId}`);
+      if (!response.ok) throw new Error('Failed to fetch pull sheet');
+
+      const data = await response.json();
+      const pullSheet = data.pull_sheet;
+
+      // Check if location is already in the pull sheet
+      const locationIds = pullSheet.locations.map((loc: Location) => loc.id);
+      if (locationIds.includes(id)) {
+        alert('This location is already in that pull sheet');
+        return;
+      }
+
+      // Add the location to the pull sheet
+      const updateResponse = await fetch(`/api/pull-sheets/${pullSheetId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          location_ids: [...locationIds, id],
+        }),
+      });
+
+      if (!updateResponse.ok) {
+        throw new Error('Failed to add location to pull sheet');
+      }
+
+      alert('Location added to pull sheet!');
+      setShowPullSheetModal(false);
+    } catch (err) {
+      console.error('Error adding to pull sheet:', err);
+      alert('Failed to add location to pull sheet. Please try again.');
     }
   };
 
@@ -332,6 +407,12 @@ export default function LocationDetailPage({ params }: { params: Promise<{ id: s
             >
               DOWNLOAD ZIP
             </button>
+            <button
+              onClick={handleAddToPullSheet}
+              className="bg-gray-800 text-white px-8 py-3 rounded hover:bg-gray-900 transition-colors font-bold uppercase"
+            >
+              ADD TO PULL SHEET
+            </button>
           </div>
         </div>
       </section>
@@ -465,6 +546,81 @@ export default function LocationDetailPage({ params }: { params: Promise<{ id: s
               </svg>
             </button>
           )}
+        </div>
+      )}
+
+      {/* Pull Sheet Modal */}
+      {showPullSheetModal && (
+        <div
+          className="fixed inset-0 z-50 bg-black bg-opacity-75 flex items-center justify-center p-4"
+          onClick={() => setShowPullSheetModal(false)}
+        >
+          <div
+            className="bg-white rounded-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-black">Add to Pull Sheet</h2>
+                <button
+                  onClick={() => setShowPullSheetModal(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              {loadingPullSheets ? (
+                <div className="text-center py-12">
+                  <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#C41E3A]"></div>
+                  <p className="mt-4 text-gray-600">Loading pull sheets...</p>
+                </div>
+              ) : pullSheets.length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-gray-600 mb-4">You don't have any pull sheets yet</p>
+                  <Link
+                    href="/account/pull-sheets/new"
+                    className="inline-block bg-[#C41E3A] text-white px-6 py-3 rounded hover:bg-[#a01729] transition-colors font-bold uppercase"
+                  >
+                    Create Pull Sheet
+                  </Link>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {pullSheets.map((sheet) => (
+                    <button
+                      key={sheet.id}
+                      onClick={() => handleSelectPullSheet(sheet.id)}
+                      className="w-full text-left p-4 border border-gray-200 rounded hover:border-[#C41E3A] hover:bg-red-50 transition-all"
+                    >
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <h3 className="font-bold text-black">{sheet.name}</h3>
+                          <p className="text-sm text-gray-600">
+                            {sheet.location_count} location{sheet.location_count !== 1 ? 's' : ''}
+                          </p>
+                        </div>
+                        <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                        </svg>
+                      </div>
+                    </button>
+                  ))}
+
+                  <div className="pt-4 border-t border-gray-200 mt-6">
+                    <Link
+                      href="/account/pull-sheets/new"
+                      className="block w-full text-center bg-gray-100 text-black px-6 py-3 rounded hover:bg-gray-200 transition-colors font-bold uppercase"
+                    >
+                      Create New Pull Sheet
+                    </Link>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </div>
