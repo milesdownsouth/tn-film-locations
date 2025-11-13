@@ -5,7 +5,11 @@
 import React from 'react';
 import Link from 'next/link';
 
-export function Footer() {
+interface FooterProps {
+  isLoggedIn?: boolean;
+}
+
+export function Footer({ isLoggedIn = false }: FooterProps) {
   return (
     <footer className="bg-black text-white py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -47,9 +51,15 @@ export function Footer() {
           <Link href="/search" className="text-white hover:text-[#C41E3A] transition-colors font-medium uppercase text-sm">
             LOCATION SEARCH
           </Link>
-          <Link href="/auth/login" className="text-white hover:text-[#C41E3A] transition-colors font-medium uppercase text-sm">
-            LOGIN
-          </Link>
+          {isLoggedIn ? (
+            <Link href="/account" className="text-white hover:text-[#C41E3A] transition-colors font-medium uppercase text-sm">
+              ACCOUNT
+            </Link>
+          ) : (
+            <Link href="/auth/login" className="text-white hover:text-[#C41E3A] transition-colors font-medium uppercase text-sm">
+              LOGIN
+            </Link>
+          )}
         </div>
 
         {/* Copyright */}

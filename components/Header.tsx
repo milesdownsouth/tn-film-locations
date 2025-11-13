@@ -39,11 +39,11 @@ export function Header() {
           {/* Right Side - User Icon & Contact Button */}
           <div className="hidden md:flex items-center space-x-4">
             {/* User Icon */}
-            <button className="text-black hover:text-[#C41E3A] transition-colors">
+            <Link href="/account" className="text-black hover:text-[#C41E3A] transition-colors">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
-            </button>
+            </Link>
 
             {/* Contact Us Button */}
             <Link href="/contact">
@@ -107,6 +107,13 @@ export function Header() {
               onClick={() => setIsMenuOpen(false)}
             >
               LOCATION SEARCH
+            </Link>
+            <Link
+              href="/account"
+              className="block text-black hover:text-[#C41E3A] transition-colors font-medium uppercase text-sm"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              MY ACCOUNT
             </Link>
             <Link href="/contact" onClick={() => setIsMenuOpen(false)}>
               <button className="w-full bg-[#C41E3A] text-white px-6 py-2.5 rounded hover:bg-[#a01729] transition-colors font-bold uppercase text-sm">
