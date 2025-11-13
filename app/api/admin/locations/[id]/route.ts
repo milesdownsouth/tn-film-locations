@@ -31,6 +31,7 @@ export async function PATCH(
       contact_email: formData.get('contact_email') as string,
       contact_phone: formData.get('contact_phone') as string,
       is_active: formData.get('is_active') === 'true',
+      is_featured: formData.get('is_featured') === 'true',
     };
 
     // Get existing images that should be kept

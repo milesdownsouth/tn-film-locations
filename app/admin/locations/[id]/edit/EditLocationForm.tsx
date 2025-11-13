@@ -36,7 +36,8 @@ export default function EditLocationForm({ location }: EditLocationFormProps) {
     contact_name: location.contact_name,
     contact_email: location.contact_email,
     contact_phone: location.contact_phone,
-    is_active: location.is_active
+    is_active: location.is_active,
+    is_featured: location.is_featured || false
   });
 
   const [newAmenity, setNewAmenity] = useState('');
@@ -85,7 +86,7 @@ export default function EditLocationForm({ location }: EditLocationFormProps) {
 
   const handleExistingImageDragStart = (e: React.DragEvent, index: number) => {
     e.dataTransfer.effectAllowed = 'move';
-    e.dataTransfer.setData('text/html', `existing-${index}`);
+    e.dataTransfer.setData('text/plain', index.toString());
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -95,12 +96,9 @@ export default function EditLocationForm({ location }: EditLocationFormProps) {
 
   const handleExistingImageDrop = (e: React.DragEvent, dropIndex: number) => {
     e.preventDefault();
-    const dragData = e.dataTransfer.getData('text/html');
+    const dragIndex = parseInt(e.dataTransfer.getData('text/plain'));
 
-    if (!dragData.startsWith('existing-')) return;
-
-    const dragIndex = parseInt(dragData.replace('existing-', ''));
-    if (dragIndex === dropIndex) return;
+    if (isNaN(dragIndex) || dragIndex === dropIndex) return;
 
     // Reorder existing images
     const newExistingImages = [...existingImages];
@@ -232,40 +230,50 @@ export default function EditLocationForm({ location }: EditLocationFormProps) {
                   />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Property Type *
-                    </label>
-                    <select
-                      name="property_type"
-                      required
-                      value={formData.property_type}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#C41E3A]"
-                    >
-                      {PROPERTY_TYPES.map(type => (
-                        <option key={type} value={type}>
-                          {type.charAt(0).toUpperCase() + type.slice(1)}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Property Type *
+                  </label>
+                  <select
+                    name="property_type"
+                    required
+                    value={formData.property_type}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#C41E3A]"
+                  >
+                    {PROPERTY_TYPES.map(type => (
+                      <option key={type} value={type}>
+                        {type.charAt(0).toUpperCase() + type.slice(1)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-                  <div className="flex items-center pt-6">
-                    <label className="flex items-center">
-                      <input
-                        type="checkbox"
-                        name="is_active"
-                        checked={formData.is_active}
-                        onChange={handleInputChange}
-                        className="mr-2 h-4 w-4 text-[#C41E3A] focus:ring-[#C41E3A]"
-                      />
-                      <span className="text-sm font-medium text-gray-700">
-                        Active (visible to public)
-                      </span>
-                    </label>
-                  </div>
+                <div className="space-y-2 pt-6">
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      name="is_active"
+                      checked={formData.is_active}
+                      onChange={handleInputChange}
+                      className="mr-2 h-4 w-4 text-[#C41E3A] focus:ring-[#C41E3A]"
+                    />
+                    <span className="text-sm font-medium text-gray-700">
+                      Active (visible to public)
+                    </span>
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      name="is_featured"
+                      checked={formData.is_featured}
+                      onChange={handleInputChange}
+                      className="mr-2 h-4 w-4 text-[#C41E3A] focus:ring-[#C41E3A]"
+                    />
+                    <span className="text-sm font-medium text-gray-700">
+                      Featured (show on home page)
+                    </span>
+                  </label>
                 </div>
               </div>
             </div>

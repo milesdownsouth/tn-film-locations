@@ -27,6 +27,7 @@ export async function POST(request: NextRequest) {
       contact_email: formData.get('contact_email') as string,
       contact_phone: formData.get('contact_phone') as string,
       is_active: formData.get('is_active') === 'true',
+      is_featured: formData.get('is_featured') === 'true',
       created_by: user?.id
     };
 
