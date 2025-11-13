@@ -6,11 +6,48 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { Resend } from 'resend';
+import { checkRateLimit, getClientIp } from '@/lib/rate-limiter';
 
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
     const body = await request.json();
+
+    // SPAM PROTECTION: Check honeypot
+    if (body._honeypot && body._honeypot !== '') {
+      console.log('Spam detected: Honeypot filled');
+      return NextResponse.json(
+        { error: 'Invalid submission' },
+        { status: 400 }
+      );
+    }
+
+    // SPAM PROTECTION: Check timestamp (minimum 3 seconds)
+    if (body._timestamp) {
+      const timeSinceLoad = Date.now() - body._timestamp;
+      if (timeSinceLoad < 3000) {
+        console.log('Spam detected: Form submitted too quickly');
+        return NextResponse.json(
+          { error: 'Please take a moment to review your message' },
+          { status: 400 }
+        );
+      }
+    }
+
+    // SPAM PROTECTION: Rate limiting
+    const clientIp = getClientIp(request.headers);
+    const rateLimit = checkRateLimit(clientIp, {
+      windowMs: 15 * 60 * 1000, // 15 minutes
+      maxRequests: 3, // Max 3 submissions per 15 minutes
+    });
+
+    if (!rateLimit.allowed) {
+      const resetIn = Math.ceil((rateLimit.resetAt - Date.now()) / 1000 / 60);
+      return NextResponse.json(
+        { error: `Too many submissions. Please try again in ${resetIn} minutes.` },
+        { status: 429 }
+      );
+    }
 
     // Validate required fields
     const { name, email, phone, company, message } = body;

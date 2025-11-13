@@ -18,11 +18,29 @@ export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [honeypot, setHoneypot] = useState('');
+  const [formLoadTime] = useState(Date.now());
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+
+    // Client-side spam checks
+    if (honeypot) {
+      // Bot filled the honeypot field
+      setError('Invalid submission. Please try again.');
+      setLoading(false);
+      return;
+    }
+
+    const timeSinceLoad = Date.now() - formLoadTime;
+    if (timeSinceLoad < 3000) {
+      // Form submitted too quickly (less than 3 seconds)
+      setError('Please take a moment to review your message before submitting.');
+      setLoading(false);
+      return;
+    }
 
     try {
       const response = await fetch('/api/contact', {
@@ -30,7 +48,11 @@ export default function ContactPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          _honeypot: honeypot,
+          _timestamp: formLoadTime,
+        }),
       });
 
       const data = await response.json();
@@ -81,6 +103,18 @@ export default function ContactPage() {
               </div>
             )}
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Honeypot field - hidden from users, catches bots */}
+            <input
+              type="text"
+              name="website"
+              value={honeypot}
+              onChange={(e) => setHoneypot(e.target.value)}
+              style={{ position: 'absolute', left: '-9999px', width: '1px', height: '1px' }}
+              tabIndex={-1}
+              autoComplete="off"
+              aria-hidden="true"
+            />
+
             {/* Name and Email Row */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <input
