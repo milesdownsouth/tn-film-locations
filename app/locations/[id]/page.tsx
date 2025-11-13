@@ -23,6 +23,7 @@ export default function LocationDetailPage({ params }: { params: Promise<{ id: s
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
   // Fetch location data
   useEffect(() => {
@@ -80,6 +81,39 @@ export default function LocationDetailPage({ params }: { params: Promise<{ id: s
       alert('Failed to download images. Please try again.');
     }
   };
+
+  const openLightbox = (index: number) => {
+    setSelectedImageIndex(index);
+    setIsLightboxOpen(true);
+  };
+
+  const closeLightbox = () => {
+    setIsLightboxOpen(false);
+  };
+
+  const nextImage = () => {
+    if (!location?.images) return;
+    setSelectedImageIndex((prev) => (prev + 1) % location.images.length);
+  };
+
+  const prevImage = () => {
+    if (!location?.images) return;
+    setSelectedImageIndex((prev) => (prev - 1 + location.images.length) % location.images.length);
+  };
+
+  // Keyboard navigation for lightbox
+  useEffect(() => {
+    if (!isLightboxOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') closeLightbox();
+      if (e.key === 'ArrowRight') nextImage();
+      if (e.key === 'ArrowLeft') prevImage();
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isLightboxOpen, location]);
 
   // Loading state
   if (loading) {
@@ -251,7 +285,7 @@ export default function LocationDetailPage({ params }: { params: Promise<{ id: s
                 <div
                   key={index}
                   className="bg-gray-200 h-64 rounded-lg hover:opacity-90 transition-opacity cursor-pointer overflow-hidden"
-                  onClick={() => setSelectedImageIndex(index)}
+                  onClick={() => openLightbox(index)}
                 >
                   <img
                     src={image}
@@ -305,6 +339,72 @@ export default function LocationDetailPage({ params }: { params: Promise<{ id: s
             </div>
           </div>
         </section>
+      )}
+
+      {/* Lightbox Modal */}
+      {isLightboxOpen && location?.images && (
+        <div
+          className="fixed inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center"
+          onClick={closeLightbox}
+        >
+          {/* Close Button */}
+          <button
+            onClick={closeLightbox}
+            className="absolute top-4 right-4 text-white hover:text-gray-300 transition-colors z-50"
+            aria-label="Close lightbox"
+          >
+            <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+
+          {/* Previous Button */}
+          {location.images.length > 1 && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                prevImage();
+              }}
+              className="absolute left-4 text-white hover:text-gray-300 transition-colors z-50"
+              aria-label="Previous image"
+            >
+              <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+          )}
+
+          {/* Image */}
+          <div
+            className="relative max-w-7xl max-h-[90vh] mx-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={location.images[selectedImageIndex]}
+              alt={`${location.name} - Image ${selectedImageIndex + 1}`}
+              className="max-w-full max-h-[90vh] object-contain"
+            />
+            <div className="text-white text-center mt-4">
+              {selectedImageIndex + 1} / {location.images.length}
+            </div>
+          </div>
+
+          {/* Next Button */}
+          {location.images.length > 1 && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                nextImage();
+              }}
+              className="absolute right-4 text-white hover:text-gray-300 transition-colors z-50"
+              aria-label="Next image"
+            >
+              <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          )}
+        </div>
       )}
     </div>
   );
