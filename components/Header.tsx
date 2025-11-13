@@ -1,93 +1,61 @@
 /**
- * Main Navigation Header
+ * Header Component - Matches Design Exactly
  */
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { getCurrentUserWithRole, signOut } from '@/lib/auth-helpers';
-import { Button } from './Button';
-import type { UserRole } from '@/types/database';
+import { Logo } from './Logo';
 
 export function Header() {
-  const [user, setUser] = useState<{ email: string; role: UserRole } | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const router = useRouter();
-
-  useEffect(() => {
-    checkUser();
-  }, []);
-
-  async function checkUser() {
-    const currentUser = await getCurrentUserWithRole();
-    if (currentUser) {
-      setUser({
-        email: currentUser.email!,
-        role: currentUser.role || 'user',
-      });
-    }
-  }
-
-  async function handleSignOut() {
-    await signOut();
-    setUser(null);
-    router.push('/');
-    router.refresh();
-  }
 
   return (
-    <header className="bg-white shadow-sm sticky top-0 z-50">
+    <header className="bg-white shadow-sm">
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+        <div className="flex justify-between items-center h-20">
           {/* Logo */}
           <Link href="/" className="flex items-center">
-            <span className="text-2xl font-bold text-blue-600">TN Film Locations</span>
+            <Logo />
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-6">
-            <Link href="/search" className="text-gray-700 hover:text-blue-600 transition-colors">
-              Search
+          <div className="hidden md:flex items-center space-x-8">
+            <Link href="/" className="text-black hover:text-[#C41E3A] transition-colors font-medium uppercase text-sm">
+              HOME
             </Link>
-            <Link href="/about" className="text-gray-700 hover:text-blue-600 transition-colors">
-              About
+            <Link href="/about" className="text-black hover:text-[#C41E3A] transition-colors font-medium uppercase text-sm">
+              ABOUT
             </Link>
-            <Link href="/contact" className="text-gray-700 hover:text-blue-600 transition-colors">
-              Contact
+            <Link href="/services" className="text-black hover:text-[#C41E3A] transition-colors font-medium uppercase text-sm">
+              SERVICES
             </Link>
+            <Link href="/search" className="text-black hover:text-[#C41E3A] transition-colors font-medium uppercase text-sm">
+              LOCATION SEARCH
+            </Link>
+          </div>
 
-            {user ? (
-              <>
-                {user.role === 'admin' && (
-                  <Link
-                    href="/admin"
-                    className="text-gray-700 hover:text-blue-600 transition-colors font-medium"
-                  >
-                    Admin
-                  </Link>
-                )}
-                <Link
-                  href="/account"
-                  className="text-gray-700 hover:text-blue-600 transition-colors"
-                >
-                  My Account
-                </Link>
-                <Button size="sm" onClick={handleSignOut}>
-                  Sign Out
-                </Button>
-              </>
-            ) : (
-              <Link href="/auth/login">
-                <Button size="sm">Sign In</Button>
-              </Link>
-            )}
+          {/* Right Side - User Icon & Contact Button */}
+          <div className="hidden md:flex items-center space-x-4">
+            {/* User Icon */}
+            <button className="text-black hover:text-[#C41E3A] transition-colors">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            </button>
+
+            {/* Contact Us Button */}
+            <Link href="/contact">
+              <button className="bg-[#C41E3A] text-white px-6 py-2.5 rounded hover:bg-[#a01729] transition-colors font-bold uppercase text-sm">
+                CONTACT US
+              </button>
+            </Link>
           </div>
 
           {/* Mobile menu button */}
           <button
-            className="md:hidden p-2"
+            className="md:hidden p-2 text-black"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             aria-label="Toggle menu"
           >
@@ -111,58 +79,40 @@ export function Header() {
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="md:hidden py-4 space-y-3">
+          <div className="md:hidden py-4 space-y-3 border-t">
             <Link
-              href="/search"
-              className="block text-gray-700 hover:text-blue-600 transition-colors"
+              href="/"
+              className="block text-black hover:text-[#C41E3A] transition-colors font-medium uppercase text-sm"
               onClick={() => setIsMenuOpen(false)}
             >
-              Search
+              HOME
             </Link>
             <Link
               href="/about"
-              className="block text-gray-700 hover:text-blue-600 transition-colors"
+              className="block text-black hover:text-[#C41E3A] transition-colors font-medium uppercase text-sm"
               onClick={() => setIsMenuOpen(false)}
             >
-              About
+              ABOUT
             </Link>
             <Link
-              href="/contact"
-              className="block text-gray-700 hover:text-blue-600 transition-colors"
+              href="/services"
+              className="block text-black hover:text-[#C41E3A] transition-colors font-medium uppercase text-sm"
               onClick={() => setIsMenuOpen(false)}
             >
-              Contact
+              SERVICES
             </Link>
-
-            {user ? (
-              <>
-                {user.role === 'admin' && (
-                  <Link
-                    href="/admin"
-                    className="block text-gray-700 hover:text-blue-600 transition-colors font-medium"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Admin Panel
-                  </Link>
-                )}
-                <Link
-                  href="/account"
-                  className="block text-gray-700 hover:text-blue-600 transition-colors"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  My Account
-                </Link>
-                <Button size="sm" onClick={handleSignOut} className="w-full">
-                  Sign Out
-                </Button>
-              </>
-            ) : (
-              <Link href="/auth/login" onClick={() => setIsMenuOpen(false)}>
-                <Button size="sm" className="w-full">
-                  Sign In
-                </Button>
-              </Link>
-            )}
+            <Link
+              href="/search"
+              className="block text-black hover:text-[#C41E3A] transition-colors font-medium uppercase text-sm"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              LOCATION SEARCH
+            </Link>
+            <Link href="/contact" onClick={() => setIsMenuOpen(false)}>
+              <button className="w-full bg-[#C41E3A] text-white px-6 py-2.5 rounded hover:bg-[#a01729] transition-colors font-bold uppercase text-sm">
+                CONTACT US
+              </button>
+            </Link>
           </div>
         )}
       </nav>
