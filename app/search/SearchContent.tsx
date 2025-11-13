@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Location } from '@/types/database';
-import { PROPERTY_TYPES, TN_COUNTIES } from '@/types/database';
 
 interface LocationsResponse {
   locations: Location[];
@@ -40,6 +39,9 @@ export default function SearchContent() {
 
   const [locations, setLocations] = useState<Location[]>([]);
   const [availableAmenities, setAvailableAmenities] = useState<string[]>([]);
+  const [availablePropertyTypes, setAvailablePropertyTypes] = useState<string[]>([]);
+  const [availableCounties, setAvailableCounties] = useState<string[]>([]);
+  const [availableCities, setAvailableCities] = useState<string[]>([]);
   const [showAmenitiesFilter, setShowAmenitiesFilter] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -52,20 +54,30 @@ export default function SearchContent() {
     hasPrev: false,
   });
 
-  // Fetch available amenities on mount
+  // Fetch available filter options on mount
   useEffect(() => {
-    fetchAmenities();
+    fetchFilterOptions();
   }, []);
 
-  const fetchAmenities = async () => {
+  const fetchFilterOptions = async () => {
     try {
-      const response = await fetch('/api/amenities');
-      if (response.ok) {
-        const data = await response.json();
-        setAvailableAmenities(data.amenities);
+      // Fetch amenities
+      const amenitiesResponse = await fetch('/api/amenities');
+      if (amenitiesResponse.ok) {
+        const amenitiesData = await amenitiesResponse.json();
+        setAvailableAmenities(amenitiesData.amenities);
+      }
+
+      // Fetch other filter options
+      const filtersResponse = await fetch('/api/filters');
+      if (filtersResponse.ok) {
+        const filtersData = await filtersResponse.json();
+        setAvailablePropertyTypes(filtersData.propertyTypes);
+        setAvailableCounties(filtersData.counties);
+        setAvailableCities(filtersData.cities);
       }
     } catch (err) {
-      console.error('Error fetching amenities:', err);
+      console.error('Error fetching filter options:', err);
     }
   };
 
@@ -151,9 +163,6 @@ export default function SearchContent() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Get unique cities from locations (in real app, this could come from API)
-  const cities = Array.from(new Set(locations.map(loc => loc.city))).sort();
-
   return (
     <div className="bg-white min-h-screen py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -189,7 +198,7 @@ export default function SearchContent() {
             className="px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#C41E3A]"
           >
             <option value="">All Types</option>
-            {PROPERTY_TYPES.map((type) => (
+            {availablePropertyTypes.map((type) => (
               <option key={type} value={type}>
                 {type.charAt(0).toUpperCase() + type.slice(1)}
               </option>
@@ -202,7 +211,7 @@ export default function SearchContent() {
             className="px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#C41E3A]"
           >
             <option value="">All Counties</option>
-            {TN_COUNTIES.map((c) => (
+            {availableCounties.map((c) => (
               <option key={c} value={c}>
                 {c}
               </option>
@@ -215,7 +224,7 @@ export default function SearchContent() {
             className="px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#C41E3A]"
           >
             <option value="">All Cities</option>
-            {cities.map((c) => (
+            {availableCities.map((c) => (
               <option key={c} value={c}>
                 {c}
               </option>
