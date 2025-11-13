@@ -70,7 +70,7 @@ export default function HomeContent({ featuredLocations }: HomeContentProps) {
   return (
     <div>
       {/* Hero Section with Video Background */}
-      <section className="relative h-[500px] overflow-hidden">
+      <section style={{ position: 'relative', height: '500px', overflow: 'hidden', zIndex: 0 }}>
         {/* Video Background */}
         <video
           ref={videoRef}
@@ -79,18 +79,51 @@ export default function HomeContent({ featuredLocations }: HomeContentProps) {
           muted
           playsInline
           preload="auto"
-          className="absolute inset-0 w-full h-full object-cover"
-          style={{ pointerEvents: 'none', transition: 'opacity 0.3s ease-in-out', zIndex: 4 }}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            zIndex: 1,
+            pointerEvents: 'none',
+            transition: 'opacity 0.3s ease-in-out',
+          }}
         >
           <source src="/hero-video.mp4" type="video/mp4" />
           Your browser does not support the video tag.
         </video>
 
         {/* Dark Overlay for Text Readability */}
-        <div className="absolute inset-0 bg-black bg-opacity-50" style={{ zIndex: 5 }}></div>
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            zIndex: 2,
+          }}
+        ></div>
 
         {/* Content */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center px-4" style={{ zIndex: 10 }}>
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            zIndex: 3,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '0 1rem',
+          }}
+        >
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white text-center mb-8">
             VENUE AND FILM LOCATIONS IN TENNESSEE
           </h1>
