@@ -4,7 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient as createServerClient } from '@supabase/ssr';
+import { createServerClient } from '@supabase/ssr';
 
 export async function GET(request: NextRequest) {
   try {
