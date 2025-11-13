@@ -41,6 +41,41 @@ export interface SavedLocation {
   saved_at: string;
 }
 
+export interface PullSheet {
+  id: string;
+  user_id: string;
+  name: string;
+  description: string | null;
+  is_public: boolean;
+  share_token: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PullSheetLocation {
+  id: string;
+  pull_sheet_id: string;
+  location_id: string;
+  added_at: string;
+}
+
+// Pull sheet with locations populated
+export interface PullSheetWithLocations extends PullSheet {
+  locations: Location[];
+}
+
+// For creating a new pull sheet
+export type CreatePullSheetInput = {
+  name: string;
+  description?: string;
+  is_public?: boolean;
+};
+
+// For updating a pull sheet
+export type UpdatePullSheetInput = Partial<Omit<PullSheet, 'id' | 'user_id' | 'created_at' | 'updated_at' | 'share_token'>> & {
+  id: string;
+};
+
 // For creating a new location (without auto-generated fields)
 export type CreateLocationInput = Omit<Location, 'id' | 'created_at' | 'updated_at'>;
 
