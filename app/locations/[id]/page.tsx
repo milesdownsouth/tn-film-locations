@@ -55,16 +55,77 @@ export default function LocationDetailPage({ params }: { params: Promise<{ id: s
     fetchLocation();
   }, [id]);
 
-  const handleSave = () => {
-    setIsSaved(!isSaved);
-    // TODO: Implement save to user's saved locations via API
+  // Check if location is saved on load
+  useEffect(() => {
+    const checkIfSaved = async () => {
+      try {
+        const response = await fetch('/api/saved-locations');
+        if (response.ok) {
+          const data = await response.json();
+          const savedIds = data.savedLocationIds || [];
+          setIsSaved(savedIds.includes(id));
+        }
+      } catch (err) {
+        console.error('Error checking saved status:', err);
+      }
+    };
+
+    checkIfSaved();
+  }, [id]);
+
+  const handleSave = async () => {
+    try {
+      if (isSaved) {
+        // Unsave the location
+        const response = await fetch(`/api/saved-locations?location_id=${id}`, {
+          method: 'DELETE',
+        });
+
+        if (response.ok) {
+          setIsSaved(false);
+        } else {
+          const data = await response.json();
+          if (response.status === 401) {
+            alert('Please log in to save locations');
+            window.location.href = '/auth/login';
+          } else {
+            alert(data.error || 'Failed to unsave location');
+          }
+        }
+      } else {
+        // Save the location
+        const response = await fetch('/api/saved-locations', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ location_id: id }),
+        });
+
+        if (response.ok) {
+          setIsSaved(true);
+        } else {
+          const data = await response.json();
+          if (response.status === 401) {
+            alert('Please log in to save locations');
+            window.location.href = '/auth/login';
+          } else {
+            alert(data.error || 'Failed to save location');
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Error toggling save:', err);
+      alert('An error occurred. Please try again.');
+    }
   };
 
   const handleDownloadPDF = async () => {
     if (!location) return;
 
     try {
-      generateLocationsPDF([location], 'guest@tnfilmlocations.com');
+      const { downloadLocationsPDF } = await import('@/lib/pdf-generator');
+      downloadLocationsPDF([location], 'guest@tnfilmlocations.com');
     } catch (err) {
       console.error('Error generating PDF:', err);
       alert('Failed to generate PDF. Please try again.');
