@@ -5,11 +5,9 @@
 
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 export default function LogoutButton() {
-  const router = useRouter();
   const [loading, setLoading] = useState(false);
 
   const handleLogout = async () => {
@@ -20,8 +18,7 @@ export default function LogoutButton() {
       });
 
       if (response.ok) {
-        router.push('/');
-        router.refresh();
+        window.location.href = '/';
       }
     } catch (error) {
       console.error('Logout error:', error);

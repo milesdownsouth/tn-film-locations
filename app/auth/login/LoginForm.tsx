@@ -6,11 +6,10 @@
 'use client';
 
 import { useState, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
 function LoginFormContent() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -38,9 +37,8 @@ function LoginFormContent() {
         throw new Error(data.error || 'Failed to sign in');
       }
 
-      // Redirect to account page or specified redirect
-      router.push(redirectTo);
-      router.refresh();
+      // Use window.location for hard redirect to ensure cookies are loaded
+      window.location.href = redirectTo;
     } catch (err) {
       console.error('Login error:', err);
       setError(err instanceof Error ? err.message : 'An error occurred');
