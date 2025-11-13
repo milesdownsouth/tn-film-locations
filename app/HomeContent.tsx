@@ -19,13 +19,43 @@ export default function HomeContent({ featuredLocations }: HomeContentProps) {
   const router = useRouter();
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  // Ensure video plays on mount
+  // Ensure video plays on mount and handle fade effect on loop
   useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.play().catch((error) => {
-        console.log('Video autoplay failed:', error);
-      });
-    }
+    const video = videoRef.current;
+    if (!video) return;
+
+    // Start playing the video
+    video.play().catch((error) => {
+      console.log('Video autoplay failed:', error);
+    });
+
+    // Handle fade effect near end of video
+    const handleTimeUpdate = () => {
+      if (!video) return;
+
+      const timeLeft = video.duration - video.currentTime;
+
+      // Fade out in the last 0.5 seconds
+      if (timeLeft <= 0.5 && timeLeft > 0) {
+        const opacity = timeLeft / 0.5;
+        video.style.opacity = opacity.toString();
+      }
+      // Fade back in at the start
+      else if (video.currentTime < 0.5) {
+        const opacity = video.currentTime / 0.5;
+        video.style.opacity = opacity.toString();
+      }
+      // Normal opacity in the middle
+      else {
+        video.style.opacity = '1';
+      }
+    };
+
+    video.addEventListener('timeupdate', handleTimeUpdate);
+
+    return () => {
+      video.removeEventListener('timeupdate', handleTimeUpdate);
+    };
   }, []);
 
   const handleSearch = (e: React.FormEvent) => {
@@ -49,15 +79,15 @@ export default function HomeContent({ featuredLocations }: HomeContentProps) {
           muted
           playsInline
           preload="auto"
-          className="absolute inset-0 w-full h-full object-cover"
-          style={{ pointerEvents: 'none' }}
+          className="absolute inset-0 w-full h-full object-cover z-[2]"
+          style={{ pointerEvents: 'none', transition: 'opacity 0.3s ease-in-out' }}
         >
           <source src="/hero-video.mp4" type="video/mp4" />
           Your browser does not support the video tag.
         </video>
 
         {/* Dark Overlay for Text Readability */}
-        <div className="absolute inset-0 bg-black bg-opacity-50 z-[1]"></div>
+        <div className="absolute inset-0 bg-black bg-opacity-50 z-[3]"></div>
 
         {/* Content */}
         <div className="absolute inset-0 flex flex-col items-center justify-center px-4 z-10">
