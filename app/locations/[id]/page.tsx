@@ -119,13 +119,18 @@ export default function LocationDetailPage({ params }: { params: Promise<{ id: s
   return (
     <div className="bg-white">
       {/* Hero Section with Location Name */}
-      <section
-        className="relative h-[500px] bg-cover bg-center"
-        style={{
-          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url(${heroImage})`
-        }}
-      >
-        <div className="absolute inset-0 flex flex-col justify-end px-8 pb-12">
+      <section className="relative h-[500px] overflow-hidden">
+        {/* Hero Image */}
+        <img
+          src={heroImage}
+          alt={location.name}
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        {/* Dark Overlay */}
+        <div className="absolute inset-0 bg-black bg-opacity-30"></div>
+
+        {/* Content */}
+        <div className="relative h-full flex flex-col justify-end px-8 pb-12">
           <p className="text-white text-lg mb-2">{location.city}, {location.county}</p>
           <h1 className="text-5xl md:text-6xl font-bold text-white uppercase">{location.name}</h1>
         </div>
@@ -133,7 +138,7 @@ export default function LocationDetailPage({ params }: { params: Promise<{ id: s
         {/* Save Button - Top Right */}
         <button
           onClick={handleSave}
-          className="absolute top-8 right-8 bg-white text-black px-8 py-3 rounded hover:bg-gray-100 transition-colors font-bold uppercase"
+          className="absolute top-8 right-8 bg-white text-black px-8 py-3 rounded hover:bg-gray-100 transition-colors font-bold uppercase z-10"
         >
           {isSaved ? 'SAVED' : 'SAVE'}
         </button>
