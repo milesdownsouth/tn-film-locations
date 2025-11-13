@@ -39,7 +39,7 @@ export default function Home() {
               placeholder="Search by location type, city, or features..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="flex-1 px-6 py-4 rounded text-lg focus:outline-none"
+              className="flex-1 px-6 py-4 rounded text-lg bg-white text-black focus:outline-none placeholder:text-gray-500"
             />
             <button
               type="submit"
@@ -63,54 +63,49 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
             {/* Left Column */}
             <div className="space-y-12">
-              {/* Heading 1 */}
+              {/* Film & TV Productions */}
               <div>
                 <div className="w-16 h-16 rounded-full border-2 border-white flex items-center justify-center mb-4">
                   <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                   </svg>
                 </div>
-                <h3 className="text-xl font-bold mb-3">HEADING 1</h3>
-                <p className="text-sm text-gray-400">This is the subtext line</p>
+                <h3 className="text-xl font-bold mb-3">FILM & TV PRODUCTIONS</h3>
+                <p className="text-sm text-gray-400">Find your perfect scene</p>
                 <p className="text-sm text-gray-300 mt-4">
-                  Lorem ipsum dolor sit amet consectetur. Elementum at nulla fermentum lorem. Interdum
-                  diam quisque id convallis non in facilisis. Odio vulputate phasellus semper ac sed.
-                  A in amet et id habitant urna. Gravida nisi urna consectetur vitae.
+                  From urban streetscapes to rolling countryside, discover locations that bring your script to life. Our curated database includes detailed amenities, permitting information, and high-resolution photos to streamline your location scouting process.
                 </p>
               </div>
 
-              {/* Heading 3 */}
+              {/* Event Professionals */}
               <div>
                 <div className="w-16 h-16 rounded-full border-2 border-white flex items-center justify-center mb-4">
                   <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
                 </div>
-                <h3 className="text-xl font-bold mb-3">HEADING 3</h3>
-                <p className="text-sm text-gray-400">This is the subtext line</p>
+                <h3 className="text-xl font-bold mb-3">EVENT PROFESSIONALS</h3>
+                <p className="text-sm text-gray-400">Memorable spaces for every occasion</p>
                 <p className="text-sm text-gray-300 mt-4">
-                  Lorem ipsum dolor sit amet consectetur. Elementum at nulla fermentum lorem. Interdum
-                  diam quisque id convallis non in facilisis. Odio vulputate phasellus semper ac sed.
-                  A in amet et id habitant urna. Gravida nisi urna consectetur vitae.
+                  Whether you're planning a corporate event, wedding, or special production, explore Tennessee's most distinctive venues. Filter by capacity, style, and amenities to find spaces that exceed your client's expectations.
                 </p>
               </div>
             </div>
 
             {/* Right Column */}
             <div className="space-y-12">
-              {/* Heading 2 */}
+              {/* Commercial & Photo Shoots */}
               <div>
                 <div className="w-16 h-16 rounded-full border-2 border-white flex items-center justify-center mb-4">
                   <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
                 </div>
-                <h3 className="text-xl font-bold mb-3">HEADING 2</h3>
-                <p className="text-sm text-gray-400">This is the subtext line</p>
+                <h3 className="text-xl font-bold mb-3">COMMERCIAL & PHOTO SHOOTS</h3>
+                <p className="text-sm text-gray-400">Stunning backdrops for any vision</p>
                 <p className="text-sm text-gray-300 mt-4">
-                  Lorem ipsum dolor sit amet consectetur. Elementum at nulla fermentum lorem. Interdum
-                  diam quisque id convallis non in facilisis. Odio vulputate phasellus semper ac sed.
-                  A in amet et id habitant urna. Gravida nisi urna consectetur vitae.
+                  Access unique Tennessee venues perfect for commercials, product photography, and brand content. Each location includes comprehensive details about access, lighting conditions, and available facilities to ensure your shoot runs smoothly.
                 </p>
               </div>
 
@@ -120,8 +115,7 @@ export default function Home() {
                   NOT SURE HOW TO GET STARTED?
                 </h3>
                 <p className="text-sm mb-6">
-                  Lorem ipsum dolor sit amet consectetur. Vulputate erat ut diam volutpat elementum
-                  ullamcorper vel nisl tincidunt. Integer volutpat auctor habitasse et eget.
+                  Our team is here to help you find the perfect location for your project. Get personalized recommendations based on your specific needs, budget, and timeline.
                 </p>
                 <Link href="/contact">
                   <button className="bg-black text-white px-6 py-3 rounded hover:bg-gray-800 transition-colors font-bold uppercase">
