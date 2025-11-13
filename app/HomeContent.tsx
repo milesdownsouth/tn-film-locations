@@ -37,13 +37,16 @@ export default function HomeContent({ featuredLocations }: HomeContentProps) {
           loop
           muted
           playsInline
+          preload="auto"
           className="absolute inset-0 w-full h-full object-cover"
+          style={{ pointerEvents: 'none' }}
         >
           <source src="/hero-video.mp4" type="video/mp4" />
+          Your browser does not support the video tag.
         </video>
 
         {/* Dark Overlay for Text Readability */}
-        <div className="absolute inset-0 bg-black bg-opacity-50"></div>
+        <div className="absolute inset-0 bg-black bg-opacity-50 z-[1]"></div>
 
         {/* Content */}
         <div className="absolute inset-0 flex flex-col items-center justify-center px-4 z-10">

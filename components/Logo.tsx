@@ -5,15 +5,15 @@
 import React from 'react';
 import Image from 'next/image';
 
-export function Logo({ className = "h-12" }: { className?: string }) {
+export function Logo() {
   return (
-    <div className="flex items-center">
+    <div className="flex items-center w-full h-[60px]">
       <Image
         src="/TN-Film-Locations_red.png"
         alt="TN Film Locations"
         width={200}
-        height={48}
-        className={className}
+        height={60}
+        className="w-full h-[60px] object-contain"
         priority
       />
     </div>
