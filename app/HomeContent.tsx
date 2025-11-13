@@ -79,18 +79,18 @@ export default function HomeContent({ featuredLocations }: HomeContentProps) {
           muted
           playsInline
           preload="auto"
-          className="absolute inset-0 w-full h-full object-cover z-[2]"
-          style={{ pointerEvents: 'none', transition: 'opacity 0.3s ease-in-out' }}
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{ pointerEvents: 'none', transition: 'opacity 0.3s ease-in-out', zIndex: 4 }}
         >
           <source src="/hero-video.mp4" type="video/mp4" />
           Your browser does not support the video tag.
         </video>
 
         {/* Dark Overlay for Text Readability */}
-        <div className="absolute inset-0 bg-black bg-opacity-50 z-[3]"></div>
+        <div className="absolute inset-0 bg-black bg-opacity-50" style={{ zIndex: 5 }}></div>
 
         {/* Content */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center px-4 z-10">
+        <div className="absolute inset-0 flex flex-col items-center justify-center px-4" style={{ zIndex: 10 }}>
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white text-center mb-8">
             VENUE AND FILM LOCATIONS IN TENNESSEE
           </h1>
