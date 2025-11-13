@@ -15,6 +15,12 @@ interface LocationDetailResponse {
   relatedLocations: Partial<Location>[];
 }
 
+interface PullSheet {
+  id: string;
+  name: string;
+  location_count: number;
+}
+
 export default function LocationDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const [isSaved, setIsSaved] = useState(false);
@@ -23,6 +29,10 @@ export default function LocationDetailPage({ params }: { params: Promise<{ id: s
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [showPullSheetModal, setShowPullSheetModal] = useState(false);
+  const [pullSheets, setPullSheets] = useState<PullSheet[]>([]);
+  const [loadingPullSheets, setLoadingPullSheets] = useState(false);
 
   // Fetch location data
   useEffect(() => {
@@ -54,16 +64,77 @@ export default function LocationDetailPage({ params }: { params: Promise<{ id: s
     fetchLocation();
   }, [id]);
 
-  const handleSave = () => {
-    setIsSaved(!isSaved);
-    // TODO: Implement save to user's saved locations via API
+  // Check if location is saved on load
+  useEffect(() => {
+    const checkIfSaved = async () => {
+      try {
+        const response = await fetch('/api/saved-locations');
+        if (response.ok) {
+          const data = await response.json();
+          const savedIds = data.savedLocationIds || [];
+          setIsSaved(savedIds.includes(id));
+        }
+      } catch (err) {
+        console.error('Error checking saved status:', err);
+      }
+    };
+
+    checkIfSaved();
+  }, [id]);
+
+  const handleSave = async () => {
+    try {
+      if (isSaved) {
+        // Unsave the location
+        const response = await fetch(`/api/saved-locations?location_id=${id}`, {
+          method: 'DELETE',
+        });
+
+        if (response.ok) {
+          setIsSaved(false);
+        } else {
+          const data = await response.json();
+          if (response.status === 401) {
+            alert('Please log in to save locations');
+            window.location.href = '/auth/login';
+          } else {
+            alert(data.error || 'Failed to unsave location');
+          }
+        }
+      } else {
+        // Save the location
+        const response = await fetch('/api/saved-locations', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ location_id: id }),
+        });
+
+        if (response.ok) {
+          setIsSaved(true);
+        } else {
+          const data = await response.json();
+          if (response.status === 401) {
+            alert('Please log in to save locations');
+            window.location.href = '/auth/login';
+          } else {
+            alert(data.error || 'Failed to save location');
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Error toggling save:', err);
+      alert('An error occurred. Please try again.');
+    }
   };
 
   const handleDownloadPDF = async () => {
     if (!location) return;
 
     try {
-      generateLocationsPDF([location], 'guest@tnfilmlocations.com');
+      const { downloadLocationsPDF } = await import('@/lib/pdf-generator');
+      downloadLocationsPDF([location], 'guest@tnfilmlocations.com');
     } catch (err) {
       console.error('Error generating PDF:', err);
       alert('Failed to generate PDF. Please try again.');
@@ -80,6 +151,105 @@ export default function LocationDetailPage({ params }: { params: Promise<{ id: s
       alert('Failed to download images. Please try again.');
     }
   };
+
+  const handleAddToPullSheet = async () => {
+    setLoadingPullSheets(true);
+    setShowPullSheetModal(true);
+
+    try {
+      const response = await fetch('/api/pull-sheets');
+      if (response.status === 401) {
+        alert('Please log in to add locations to pull sheets');
+        window.location.href = '/auth/login';
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch pull sheets');
+      }
+
+      const data = await response.json();
+      setPullSheets(data.pull_sheets || []);
+    } catch (err) {
+      console.error('Error fetching pull sheets:', err);
+      alert('Failed to load pull sheets. Please try again.');
+      setShowPullSheetModal(false);
+    } finally {
+      setLoadingPullSheets(false);
+    }
+  };
+
+  const handleSelectPullSheet = async (pullSheetId: string) => {
+    try {
+      // Get the pull sheet data
+      const response = await fetch(`/api/pull-sheets/${pullSheetId}`);
+      if (!response.ok) throw new Error('Failed to fetch pull sheet');
+
+      const data = await response.json();
+      const pullSheet = data.pull_sheet;
+
+      // Check if location is already in the pull sheet
+      const locationIds = pullSheet.locations.map((loc: Location) => loc.id);
+      if (locationIds.includes(id)) {
+        alert('This location is already in that pull sheet');
+        return;
+      }
+
+      // Add the location to the pull sheet
+      const updateResponse = await fetch(`/api/pull-sheets/${pullSheetId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          location_ids: [...locationIds, id],
+        }),
+      });
+
+      if (!updateResponse.ok) {
+        throw new Error('Failed to add location to pull sheet');
+      }
+
+      alert('Location added to pull sheet!');
+      setShowPullSheetModal(false);
+    } catch (err) {
+      console.error('Error adding to pull sheet:', err);
+      alert('Failed to add location to pull sheet. Please try again.');
+    }
+  };
+
+  const openLightbox = (index: number) => {
+    setSelectedImageIndex(index);
+    setIsLightboxOpen(true);
+  };
+
+  const closeLightbox = () => {
+    setIsLightboxOpen(false);
+  };
+
+  const nextImage = () => {
+    if (!location?.images) return;
+    setSelectedImageIndex((prev) => (prev + 1) % location.images.length);
+  };
+
+  const prevImage = () => {
+    if (!location?.images) return;
+    setSelectedImageIndex((prev) => (prev - 1 + location.images.length) % location.images.length);
+  };
+
+  // Keyboard navigation for lightbox
+  useEffect(() => {
+    if (!isLightboxOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') closeLightbox();
+      if (e.key === 'ArrowRight') nextImage();
+      if (e.key === 'ArrowLeft') prevImage();
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isLightboxOpen, location]);
 
   // Loading state
   if (loading) {
@@ -122,7 +292,7 @@ export default function LocationDetailPage({ params }: { params: Promise<{ id: s
       <section
         className="relative h-[500px] bg-cover bg-center"
         style={{
-          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url(${heroImage})`
+          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('${heroImage}')`
         }}
       >
         <div className="absolute inset-0 flex flex-col justify-end px-8 pb-12">
@@ -237,6 +407,12 @@ export default function LocationDetailPage({ params }: { params: Promise<{ id: s
             >
               DOWNLOAD ZIP
             </button>
+            <button
+              onClick={handleAddToPullSheet}
+              className="bg-gray-800 text-white px-8 py-3 rounded hover:bg-gray-900 transition-colors font-bold uppercase"
+            >
+              ADD TO PULL SHEET
+            </button>
           </div>
         </div>
       </section>
@@ -251,7 +427,7 @@ export default function LocationDetailPage({ params }: { params: Promise<{ id: s
                 <div
                   key={index}
                   className="bg-gray-200 h-64 rounded-lg hover:opacity-90 transition-opacity cursor-pointer overflow-hidden"
-                  onClick={() => setSelectedImageIndex(index)}
+                  onClick={() => openLightbox(index)}
                 >
                   <img
                     src={image}
@@ -305,6 +481,147 @@ export default function LocationDetailPage({ params }: { params: Promise<{ id: s
             </div>
           </div>
         </section>
+      )}
+
+      {/* Lightbox Modal */}
+      {isLightboxOpen && location?.images && (
+        <div
+          className="fixed inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center"
+          onClick={closeLightbox}
+        >
+          {/* Close Button */}
+          <button
+            onClick={closeLightbox}
+            className="absolute top-4 right-4 text-white hover:text-gray-300 transition-colors z-50"
+            aria-label="Close lightbox"
+          >
+            <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+
+          {/* Previous Button */}
+          {location.images.length > 1 && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                prevImage();
+              }}
+              className="absolute left-4 text-white hover:text-gray-300 transition-colors z-50"
+              aria-label="Previous image"
+            >
+              <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+          )}
+
+          {/* Image */}
+          <div
+            className="relative max-w-7xl max-h-[90vh] mx-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={location.images[selectedImageIndex]}
+              alt={`${location.name} - Image ${selectedImageIndex + 1}`}
+              className="max-w-full max-h-[90vh] object-contain"
+            />
+            <div className="text-white text-center mt-4">
+              {selectedImageIndex + 1} / {location.images.length}
+            </div>
+          </div>
+
+          {/* Next Button */}
+          {location.images.length > 1 && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                nextImage();
+              }}
+              className="absolute right-4 text-white hover:text-gray-300 transition-colors z-50"
+              aria-label="Next image"
+            >
+              <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Pull Sheet Modal */}
+      {showPullSheetModal && (
+        <div
+          className="fixed inset-0 z-50 bg-black bg-opacity-75 flex items-center justify-center p-4"
+          onClick={() => setShowPullSheetModal(false)}
+        >
+          <div
+            className="bg-white rounded-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-black">Add to Pull Sheet</h2>
+                <button
+                  onClick={() => setShowPullSheetModal(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              {loadingPullSheets ? (
+                <div className="text-center py-12">
+                  <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#C41E3A]"></div>
+                  <p className="mt-4 text-gray-600">Loading pull sheets...</p>
+                </div>
+              ) : pullSheets.length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-gray-600 mb-4">You don't have any pull sheets yet</p>
+                  <Link
+                    href="/account/pull-sheets/new"
+                    className="inline-block bg-[#C41E3A] text-white px-6 py-3 rounded hover:bg-[#a01729] transition-colors font-bold uppercase"
+                  >
+                    Create Pull Sheet
+                  </Link>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {pullSheets.map((sheet) => (
+                    <button
+                      key={sheet.id}
+                      onClick={() => handleSelectPullSheet(sheet.id)}
+                      className="w-full text-left p-4 border border-gray-200 rounded hover:border-[#C41E3A] hover:bg-red-50 transition-all"
+                    >
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <h3 className="font-bold text-black">{sheet.name}</h3>
+                          <p className="text-sm text-gray-600">
+                            {sheet.location_count} location{sheet.location_count !== 1 ? 's' : ''}
+                          </p>
+                        </div>
+                        <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                        </svg>
+                      </div>
+                    </button>
+                  ))}
+
+                  <div className="pt-4 border-t border-gray-200 mt-6">
+                    <Link
+                      href="/account/pull-sheets/new"
+                      className="block w-full text-center bg-gray-100 text-black px-6 py-3 rounded hover:bg-gray-200 transition-colors font-bold uppercase"
+                    >
+                      Create New Pull Sheet
+                    </Link>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

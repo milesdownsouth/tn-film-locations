@@ -7,6 +7,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
 import { checkAuth } from '@/lib/auth-middleware';
+import DeleteButton from './DeleteButton';
 import type { Location } from '@/types/database';
 
 export default async function AdminLocationsPage() {
@@ -134,17 +135,10 @@ export default async function AdminLocationsPage() {
                       >
                         Edit
                       </Link>
-                      <button
-                        onClick={() => {
-                          if (confirm(`Are you sure you want to delete "${location.name}"?`)) {
-                            // TODO: Implement delete
-                            alert('Delete functionality will be implemented');
-                          }
-                        }}
-                        className="text-red-600 hover:text-red-900"
-                      >
-                        Delete
-                      </button>
+                      <DeleteButton
+                        locationId={location.id}
+                        locationName={location.name}
+                      />
                     </td>
                   </tr>
                 ))

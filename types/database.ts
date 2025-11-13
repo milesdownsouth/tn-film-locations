@@ -29,6 +29,7 @@ export interface Location {
   contact_phone: string;
   images: string[]; // Array of image URLs from Cloudflare R2 (max 50)
   is_active: boolean;
+  is_featured: boolean; // Whether this location is featured on the home page
   created_by: string; // User ID of admin who added it
   created_at: string;
   updated_at: string;

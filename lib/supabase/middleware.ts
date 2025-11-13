@@ -42,15 +42,9 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Protect admin routes
-  if (request.nextUrl.pathname.startsWith('/admin') && user?.user_metadata?.role !== 'admin') {
-    return NextResponse.redirect(new URL('/', request.url));
-  }
-
-  // Protect account routes (require any authenticated user)
-  if (request.nextUrl.pathname.startsWith('/account') && !user) {
-    return NextResponse.redirect(new URL('/', request.url));
-  }
+  // Note: Role-based authorization is handled at the page level
+  // in each admin route using checkAuth() which queries the users table.
+  // We only check basic authentication here.
 
   // IMPORTANT: You *must* return the supabaseResponse object as it is. If you're
   // creating a new response object with NextResponse.next() make sure to:
