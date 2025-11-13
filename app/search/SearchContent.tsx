@@ -33,9 +33,14 @@ export default function SearchContent() {
   const [city, setCity] = useState(searchParams.get('city') || '');
   const [county, setCounty] = useState(searchParams.get('county') || '');
   const [propertyType, setPropertyType] = useState(searchParams.get('property_type') || '');
+  const [selectedAmenities, setSelectedAmenities] = useState<string[]>(
+    searchParams.get('amenities')?.split(',').filter(Boolean) || []
+  );
   const [currentPage, setCurrentPage] = useState(parseInt(searchParams.get('page') || '1'));
 
   const [locations, setLocations] = useState<Location[]>([]);
+  const [availableAmenities, setAvailableAmenities] = useState<string[]>([]);
+  const [showAmenitiesFilter, setShowAmenitiesFilter] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pagination, setPagination] = useState({
@@ -46,6 +51,23 @@ export default function SearchContent() {
     hasNext: false,
     hasPrev: false,
   });
+
+  // Fetch available amenities on mount
+  useEffect(() => {
+    fetchAmenities();
+  }, []);
+
+  const fetchAmenities = async () => {
+    try {
+      const response = await fetch('/api/amenities');
+      if (response.ok) {
+        const data = await response.json();
+        setAvailableAmenities(data.amenities);
+      }
+    } catch (err) {
+      console.error('Error fetching amenities:', err);
+    }
+  };
 
   // Fetch locations from API
   const fetchLocations = async () => {
@@ -58,6 +80,7 @@ export default function SearchContent() {
       if (city) params.set('city', city);
       if (county) params.set('county', county);
       if (propertyType) params.set('property_type', propertyType);
+      if (selectedAmenities.length > 0) params.set('amenities', selectedAmenities.join(','));
       params.set('page', currentPage.toString());
       params.set('limit', '12');
 
@@ -81,7 +104,7 @@ export default function SearchContent() {
   // Fetch locations when filters or page changes
   useEffect(() => {
     fetchLocations();
-  }, [searchQuery, city, county, propertyType, currentPage]);
+  }, [searchQuery, city, county, propertyType, selectedAmenities, currentPage]);
 
   // Update URL with current filters
   const updateURL = () => {
@@ -90,6 +113,7 @@ export default function SearchContent() {
     if (city) params.set('city', city);
     if (county) params.set('county', county);
     if (propertyType) params.set('property_type', propertyType);
+    if (selectedAmenities.length > 0) params.set('amenities', selectedAmenities.join(','));
     if (currentPage > 1) params.set('page', currentPage.toString());
 
     router.push(`/search?${params.toString()}`, { scroll: false });
@@ -110,6 +134,15 @@ export default function SearchContent() {
     if (filterType === 'county') setCounty(value);
     if (filterType === 'propertyType') setPropertyType(value);
     updateURL();
+  };
+
+  const handleAmenityToggle = (amenity: string) => {
+    setCurrentPage(1);
+    setSelectedAmenities(prev =>
+      prev.includes(amenity)
+        ? prev.filter(a => a !== amenity)
+        : [...prev, amenity]
+    );
   };
 
   const handlePageChange = (page: number) => {
@@ -189,13 +222,27 @@ export default function SearchContent() {
             ))}
           </select>
 
-          {(searchQuery || city || county || propertyType) && (
+          {/* Amenities Filter Button */}
+          <button
+            type="button"
+            onClick={() => setShowAmenitiesFilter(!showAmenitiesFilter)}
+            className={`px-4 py-2 border rounded font-medium transition-colors ${
+              selectedAmenities.length > 0
+                ? 'bg-[#C41E3A] text-white border-[#C41E3A]'
+                : 'border-gray-300 text-gray-700 hover:border-[#C41E3A] hover:text-[#C41E3A]'
+            }`}
+          >
+            Amenities {selectedAmenities.length > 0 && `(${selectedAmenities.length})`}
+          </button>
+
+          {(searchQuery || city || county || propertyType || selectedAmenities.length > 0) && (
             <button
               onClick={() => {
                 setSearchQuery('');
                 setCity('');
                 setCounty('');
                 setPropertyType('');
+                setSelectedAmenities([]);
                 setCurrentPage(1);
                 router.push('/search');
               }}
@@ -205,6 +252,51 @@ export default function SearchContent() {
             </button>
           )}
         </div>
+
+        {/* Amenities Dropdown */}
+        {showAmenitiesFilter && availableAmenities.length > 0 && (
+          <div className="mb-8 bg-gray-50 rounded-lg p-6 border border-gray-200">
+            <h3 className="text-lg font-bold text-black mb-4">Filter by Amenities</h3>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+              {availableAmenities.map((amenity) => (
+                <label
+                  key={amenity}
+                  className="flex items-center space-x-2 cursor-pointer hover:bg-white p-2 rounded transition-colors"
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedAmenities.includes(amenity)}
+                    onChange={() => handleAmenityToggle(amenity)}
+                    className="w-4 h-4 text-[#C41E3A] border-gray-300 rounded focus:ring-[#C41E3A] cursor-pointer"
+                  />
+                  <span className="text-sm text-gray-700">{amenity}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Selected Amenities Tags */}
+        {selectedAmenities.length > 0 && (
+          <div className="mb-6 flex flex-wrap gap-2">
+            {selectedAmenities.map((amenity) => (
+              <span
+                key={amenity}
+                className="inline-flex items-center gap-1 bg-[#C41E3A] text-white px-3 py-1 rounded-full text-sm"
+              >
+                {amenity}
+                <button
+                  onClick={() => handleAmenityToggle(amenity)}
+                  className="hover:bg-[#a01729] rounded-full p-0.5 transition-colors"
+                >
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </span>
+            ))}
+          </div>
+        )}
 
         {/* Results Count */}
         {!loading && (
