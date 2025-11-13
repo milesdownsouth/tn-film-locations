@@ -17,9 +17,7 @@ export default function AboutPage() {
                 WE HELP YOU FIND THE<br />RIGHT FILM LOCATION
               </h1>
               <p className="text-gray-300 mb-8">
-                Lorem ipsum dolor sit amet consectetur. Elementum at nulla fermentum lorem. Interdum
-                diam quisque id convallis non in facilisis. Odio vulputate phasellus semper ac sed.
-                A in amet et id habitant urna. Gravida nisi urna consectetur vitae.
+                Tennessee's film industry is booming, and finding the perfect location shouldn't slow you down. With decades of experience and deep roots across the state, we connect production teams with distinctive venues that bring stories to life. From historic landmarks to modern spaces, we know Tennessee's hidden gems—and we're here to make your location scouting effortless.
               </p>
               <Link href="/search">
                 <button className="bg-[#C41E3A] text-white px-8 py-3 rounded hover:bg-[#a01729] transition-colors font-bold uppercase">
@@ -97,11 +95,16 @@ export default function AboutPage() {
 
             {/* Right Side - Bio */}
             <div>
-              <h2 className="text-4xl font-bold mb-6">FRED JOVE</h2>
+              <h2 className="text-4xl font-bold mb-2">FRED JOVE</h2>
+              <p className="text-sm mb-6 opacity-90">Founder & Location Scout</p>
+              <p className="text-white mb-4">
+                With over 30 years in the film and location scouting industry, [Name] founded TN Film Locations to solve a problem he saw repeatedly: talented production teams spending valuable time and resources searching for the right venue.
+              </p>
+              <p className="text-white mb-4">
+                What started as a personal network of trusted locations has grown into Tennessee's most comprehensive film location database. Today, we work with productions of all sizes—from independent filmmakers to major studios—helping them discover spaces that exceed expectations and stay within budget.
+              </p>
               <p className="text-white">
-                Lorem ipsum dolor sit amet consectetur. Elementum at nulla fermentum lorem. Interdum
-                diam quisque id convallis non in facilisis. Odio vulputate phasellus semper ac sed.
-                A in amet et id habitant urna. Gravida nisi urna consectetur vitae.
+                Our mission is simple: make location scouting in Tennessee seamless, efficient, and inspiring.
               </p>
             </div>
           </div>
