@@ -1,19 +1,17 @@
 /**
- * Contact Page
+ * Contact Page - Matches Design Exactly
  */
 
 'use client';
 
 import { useState } from 'react';
-import { Button } from '@/components/Button';
-import { Input } from '@/components/Input';
-import { Card } from '@/components/Card';
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    subject: '',
+    phone: '',
+    company: '',
     message: '',
   });
 
@@ -27,92 +25,86 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-16">
-      <h1 className="text-4xl font-bold mb-8 text-center">Contact Us</h1>
+    <section className="bg-black text-white min-h-screen py-20">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-12">
+          <h1 className="text-4xl md:text-5xl font-bold mb-6">LET'S CONNECT</h1>
+          <p className="text-gray-300 max-w-2xl mx-auto">
+            Whether you're scouting for your next production, need help finding the perfect venue,
+            or have questions about our services, we're here to help. Fill out the form below and
+            we'll get back to you within 24 hours.
+          </p>
+        </div>
 
-      <div className="grid md:grid-cols-2 gap-8 mb-12">
-        <Card>
-          <h2 className="text-2xl font-bold mb-4">Get in Touch</h2>
-          <div className="space-y-4 text-gray-700">
-            <div>
-              <h3 className="font-semibold">Email</h3>
-              <p>info@tnfilmlocations.com</p>
-            </div>
-            <div>
-              <h3 className="font-semibold">Phone</h3>
-              <p>(555) 123-4567</p>
-            </div>
-            <div>
-              <h3 className="font-semibold">Office</h3>
-              <p>
-                123 Music Row
-                <br />
-                Nashville, TN 37203
-              </p>
-            </div>
-            <div>
-              <h3 className="font-semibold">Hours</h3>
-              <p>Monday - Friday: 9:00 AM - 5:00 PM CST</p>
-            </div>
+        {submitted ? (
+          <div className="bg-[#C41E3A] text-white rounded-lg p-8 text-center">
+            <h2 className="text-2xl font-bold mb-4">Thank You!</h2>
+            <p>We've received your message and will get back to you within 24 hours.</p>
           </div>
-        </Card>
-
-        <Card>
-          <h2 className="text-2xl font-bold mb-4">Send a Message</h2>
-          {submitted ? (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-green-800">
-              Thank you for your message! We'll get back to you soon.
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <Input
-                label="Name"
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Name and Email Row */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <input
                 type="text"
+                placeholder="Name"
                 required
                 value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                className="w-full px-6 py-4 rounded bg-white text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#C41E3A]"
               />
-              <Input
-                label="Email"
+              <input
                 type="email"
+                placeholder="Email Address"
                 required
                 value={formData.email}
-                onChange={(e) =>
-                  setFormData({ ...formData, email: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                className="w-full px-6 py-4 rounded bg-white text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#C41E3A]"
               />
-              <Input
-                label="Subject"
-                type="text"
+            </div>
+
+            {/* Phone and Company Row */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <input
+                type="tel"
+                placeholder="Phone"
                 required
-                value={formData.subject}
-                onChange={(e) =>
-                  setFormData({ ...formData, subject: e.target.value })
-                }
+                value={formData.phone}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                className="w-full px-6 py-4 rounded bg-white text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#C41E3A]"
               />
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Message
-                </label>
-                <textarea
-                  required
-                  rows={5}
-                  value={formData.message}
-                  onChange={(e) =>
-                    setFormData({ ...formData, message: e.target.value })
-                  }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              <Button type="submit" className="w-full">
-                Send Message
-              </Button>
-            </form>
-          )}
-        </Card>
+              <input
+                type="text"
+                placeholder="Company/Production"
+                required
+                value={formData.company}
+                onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+                className="w-full px-6 py-4 rounded bg-white text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#C41E3A]"
+              />
+            </div>
+
+            {/* Message Textarea */}
+            <textarea
+              placeholder="Tell us about your project and what you're looking for..."
+              required
+              rows={8}
+              value={formData.message}
+              onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+              className="w-full px-6 py-4 rounded bg-white text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#C41E3A]"
+            />
+
+            {/* Submit Button */}
+            <div className="text-center">
+              <button
+                type="submit"
+                className="bg-[#C41E3A] text-white px-12 py-4 rounded hover:bg-[#a01729] transition-colors font-bold uppercase"
+              >
+                GET STARTED
+              </button>
+            </div>
+          </form>
+        )}
       </div>
-    </div>
+    </section>
   );
 }
