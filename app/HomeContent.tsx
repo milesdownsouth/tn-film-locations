@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import type { Location } from '@/types/database';
@@ -17,6 +17,16 @@ interface HomeContentProps {
 export default function HomeContent({ featuredLocations }: HomeContentProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const router = useRouter();
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  // Ensure video plays on mount
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.play().catch((error) => {
+        console.log('Video autoplay failed:', error);
+      });
+    }
+  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,6 +43,7 @@ export default function HomeContent({ featuredLocations }: HomeContentProps) {
       <section className="relative h-[500px] overflow-hidden">
         {/* Video Background */}
         <video
+          ref={videoRef}
           autoPlay
           loop
           muted
