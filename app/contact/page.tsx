@@ -16,12 +16,43 @@ export default function ContactPage() {
   });
 
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement contact form submission
-    console.log('Contact form submitted:', formData);
-    setSubmitted(true);
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to submit contact form');
+      }
+
+      setSubmitted(true);
+      setFormData({
+        name: '',
+        email: '',
+        phone: '',
+        company: '',
+        message: '',
+      });
+    } catch (err) {
+      console.error('Error submitting contact form:', err);
+      setError(err instanceof Error ? err.message : 'Failed to submit contact form. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -42,6 +73,13 @@ export default function ContactPage() {
             <p>We've received your message and will get back to you within 24 hours.</p>
           </div>
         ) : (
+          <>
+            {error && (
+              <div className="bg-red-100 border border-red-400 text-red-700 px-6 py-4 rounded mb-6">
+                <p className="font-bold">Error</p>
+                <p>{error}</p>
+              </div>
+            )}
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Name and Email Row */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -97,12 +135,14 @@ export default function ContactPage() {
             <div className="text-center">
               <button
                 type="submit"
-                className="bg-[#C41E3A] text-white px-12 py-4 rounded hover:bg-[#a01729] transition-colors font-bold uppercase"
+                disabled={loading}
+                className="bg-[#C41E3A] text-white px-12 py-4 rounded hover:bg-[#a01729] transition-colors font-bold uppercase disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                GET STARTED
+                {loading ? 'SENDING...' : 'GET STARTED'}
               </button>
             </div>
           </form>
+          </>
         )}
       </div>
     </section>

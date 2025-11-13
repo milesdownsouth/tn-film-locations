@@ -31,6 +31,16 @@ export default function DownloadPullSheetPage() {
     try {
       setStatus('loading');
 
+      // Fetch user info first
+      const authResponse = await fetch('/api/debug/auth');
+      let userEmail = 'TN Film Locations User';
+      if (authResponse.ok) {
+        const authData = await authResponse.json();
+        if (authData.user && authData.user.email) {
+          userEmail = authData.user.email;
+        }
+      }
+
       // Fetch pull sheet data
       const response = await fetch(`/api/pull-sheets/${pullSheetId}`);
       if (!response.ok) {
@@ -53,9 +63,9 @@ export default function DownloadPullSheetPage() {
 
       // Generate and download PDF
       const { downloadLocationsPDF } = await import('@/lib/pdf-generator');
-      downloadLocationsPDF(
+      await downloadLocationsPDF(
         pullSheet.locations,
-        'user@tnfilmlocations.com',
+        userEmail,
         `${pullSheet.name.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.pdf`
       );
 

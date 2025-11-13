@@ -169,12 +169,26 @@ export default function PullSheetsContent() {
                       </Link>
 
                       {sheet.is_public && sheet.share_token && (
-                        <button
-                          onClick={() => copyShareLink(sheet.share_token!)}
-                          className="w-full text-center bg-blue-100 text-blue-800 px-4 py-2 rounded hover:bg-blue-200 transition-colors font-medium"
-                        >
-                          Copy Share Link
-                        </button>
+                        <div className="space-y-2">
+                          <div className="bg-blue-50 p-3 rounded">
+                            <p className="text-xs font-semibold text-blue-900 mb-1">Share Link:</p>
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="text"
+                                readOnly
+                                value={`${window.location.origin}/pull-sheets/${sheet.share_token}`}
+                                className="flex-1 text-xs px-2 py-1 bg-white border border-blue-200 rounded"
+                                onClick={(e) => (e.target as HTMLInputElement).select()}
+                              />
+                              <button
+                                onClick={() => copyShareLink(sheet.share_token!)}
+                                className="text-xs bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors font-medium"
+                              >
+                                Copy
+                              </button>
+                            </div>
+                          </div>
+                        </div>
                       )}
 
                       <Link
