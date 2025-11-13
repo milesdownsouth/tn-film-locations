@@ -39,7 +39,7 @@ export default function Home() {
               placeholder="Search by location type, city, or features..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="flex-1 px-6 py-4 rounded text-lg focus:outline-none"
+              className="flex-1 px-6 py-4 rounded text-lg bg-white text-black focus:outline-none placeholder:text-gray-500"
             />
             <button
               type="submit"
