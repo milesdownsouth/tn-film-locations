@@ -18,36 +18,38 @@ export default function HomeContent({ featuredLocations }: HomeContentProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const router = useRouter();
   const videoRef = useRef<HTMLVideoElement>(null);
+  const fadeOverlayRef = useRef<HTMLDivElement>(null);
 
   // Ensure video plays on mount and handle fade effect on loop
   useEffect(() => {
     const video = videoRef.current;
-    if (!video) return;
+    const fadeOverlay = fadeOverlayRef.current;
+    if (!video || !fadeOverlay) return;
 
     // Start playing the video
     video.play().catch((error) => {
       console.log('Video autoplay failed:', error);
     });
 
-    // Handle fade effect near end of video
+    // Handle fade effect near end of video using a black overlay
     const handleTimeUpdate = () => {
-      if (!video) return;
+      if (!video || !fadeOverlay) return;
 
       const timeLeft = video.duration - video.currentTime;
 
-      // Fade out in the last 0.5 seconds
-      if (timeLeft <= 0.5 && timeLeft > 0) {
-        const opacity = timeLeft / 0.5;
-        video.style.opacity = opacity.toString();
+      // Fade in black overlay in the last 1 second
+      if (timeLeft <= 1 && timeLeft > 0) {
+        const opacity = 1 - (timeLeft / 1); // 0 to 1
+        fadeOverlay.style.opacity = (opacity * 0.3).toString(); // Max 30% opacity
       }
-      // Fade back in at the start
-      else if (video.currentTime < 0.5) {
-        const opacity = video.currentTime / 0.5;
-        video.style.opacity = opacity.toString();
+      // Fade out black overlay at the start
+      else if (video.currentTime < 1) {
+        const opacity = 1 - (video.currentTime / 1); // 1 to 0
+        fadeOverlay.style.opacity = (opacity * 0.3).toString(); // Max 30% opacity
       }
-      // Normal opacity in the middle
+      // No extra fade in the middle
       else {
-        video.style.opacity = '1';
+        fadeOverlay.style.opacity = '0';
       }
     };
 
@@ -88,12 +90,28 @@ export default function HomeContent({ featuredLocations }: HomeContentProps) {
             objectFit: 'cover',
             zIndex: 1,
             pointerEvents: 'none',
-            transition: 'opacity 0.3s ease-in-out',
           }}
         >
           <source src="/hero-video.mp4" type="video/mp4" />
           Your browser does not support the video tag.
         </video>
+
+        {/* Fade Overlay - Creates smooth loop transition */}
+        <div
+          ref={fadeOverlayRef}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(0, 0, 0, 1)',
+            opacity: 0,
+            zIndex: 1.5,
+            pointerEvents: 'none',
+            transition: 'opacity 0.3s ease-in-out',
+          }}
+        ></div>
 
         {/* Dark Overlay for Text Readability */}
         <div
