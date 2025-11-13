@@ -74,6 +74,39 @@ export default function AddLocationForm() {
     setImagePreviews(prev => prev.filter((_, i) => i !== index));
   };
 
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/html', index.toString());
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDrop = (e: React.DragEvent, dropIndex: number) => {
+    e.preventDefault();
+    const dragIndex = parseInt(e.dataTransfer.getData('text/html'));
+
+    if (dragIndex === dropIndex) return;
+
+    // Reorder images
+    const newImageFiles = [...imageFiles];
+    const newImagePreviews = [...imagePreviews];
+
+    const draggedFile = newImageFiles[dragIndex];
+    const draggedPreview = newImagePreviews[dragIndex];
+
+    newImageFiles.splice(dragIndex, 1);
+    newImagePreviews.splice(dragIndex, 1);
+
+    newImageFiles.splice(dropIndex, 0, draggedFile);
+    newImagePreviews.splice(dropIndex, 0, draggedPreview);
+
+    setImageFiles(newImageFiles);
+    setImagePreviews(newImagePreviews);
+  };
+
   const addAmenity = () => {
     if (newAmenity.trim() && !formData.amenities.includes(newAmenity.trim())) {
       setFormData(prev => ({
@@ -459,17 +492,34 @@ export default function AddLocationForm() {
                 <p className="text-sm text-gray-500 mt-1">
                   {imageFiles.length} image(s) selected
                 </p>
+                {imagePreviews.length > 0 && (
+                  <p className="text-sm text-blue-600 mt-1 font-medium">
+                    Tip: Drag and drop images to reorder. First image will be the featured hero image.
+                  </p>
+                )}
               </div>
 
               {imagePreviews.length > 0 && (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   {imagePreviews.map((preview, index) => (
-                    <div key={index} className="relative">
+                    <div
+                      key={index}
+                      draggable
+                      onDragStart={(e) => handleDragStart(e, index)}
+                      onDragOver={handleDragOver}
+                      onDrop={(e) => handleDrop(e, index)}
+                      className="relative cursor-move border-2 border-transparent hover:border-blue-400 rounded transition-colors"
+                    >
                       <img
                         src={preview}
                         alt={`Preview ${index + 1}`}
                         className="w-full h-32 object-cover rounded"
                       />
+                      {index === 0 && (
+                        <div className="absolute top-2 left-2 bg-[#C41E3A] text-white px-2 py-1 rounded text-xs font-bold">
+                          FEATURED
+                        </div>
+                      )}
                       <button
                         type="button"
                         onClick={() => removeImage(index)}

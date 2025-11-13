@@ -83,6 +83,35 @@ export default function EditLocationForm({ location }: EditLocationFormProps) {
     setExistingImages(prev => prev.filter(img => img !== imageUrl));
   };
 
+  const handleExistingImageDragStart = (e: React.DragEvent, index: number) => {
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/html', `existing-${index}`);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleExistingImageDrop = (e: React.DragEvent, dropIndex: number) => {
+    e.preventDefault();
+    const dragData = e.dataTransfer.getData('text/html');
+
+    if (!dragData.startsWith('existing-')) return;
+
+    const dragIndex = parseInt(dragData.replace('existing-', ''));
+    if (dragIndex === dropIndex) return;
+
+    // Reorder existing images
+    const newExistingImages = [...existingImages];
+    const draggedImage = newExistingImages[dragIndex];
+
+    newExistingImages.splice(dragIndex, 1);
+    newExistingImages.splice(dropIndex, 0, draggedImage);
+
+    setExistingImages(newExistingImages);
+  };
+
   const addAmenity = () => {
     if (newAmenity.trim() && !formData.amenities.includes(newAmenity.trim())) {
       setFormData(prev => ({
@@ -443,14 +472,29 @@ export default function EditLocationForm({ location }: EditLocationFormProps) {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Current Images
                   </label>
+                  <p className="text-sm text-blue-600 mb-2 font-medium">
+                    Tip: Drag and drop images to reorder. First image will be the featured hero image.
+                  </p>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {existingImages.map((imageUrl, index) => (
-                      <div key={index} className="relative">
+                      <div
+                        key={index}
+                        draggable
+                        onDragStart={(e) => handleExistingImageDragStart(e, index)}
+                        onDragOver={handleDragOver}
+                        onDrop={(e) => handleExistingImageDrop(e, index)}
+                        className="relative cursor-move border-2 border-transparent hover:border-blue-400 rounded transition-colors"
+                      >
                         <img
                           src={imageUrl}
                           alt={`Existing ${index + 1}`}
                           className="w-full h-32 object-cover rounded"
                         />
+                        {index === 0 && (
+                          <div className="absolute top-2 left-2 bg-[#C41E3A] text-white px-2 py-1 rounded text-xs font-bold">
+                            FEATURED
+                          </div>
+                        )}
                         <button
                           type="button"
                           onClick={() => removeExistingImage(imageUrl)}
