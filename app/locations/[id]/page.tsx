@@ -422,49 +422,57 @@ export default function LocationDetailPage({ params }: { params: Promise<{ id: s
   // Separate effect for gallery animation to ensure DOM is ready
   useEffect(() => {
     if (loading || !location || !location.images || location.images.length === 0) return;
+    if (!galleryRef.current) return;
 
-    // Small delay to ensure DOM is fully rendered
-    const timer = setTimeout(() => {
+    // Use requestAnimationFrame to ensure DOM is painted
+    const animationFrameId = requestAnimationFrame(() => {
       if (!galleryRef.current) return;
 
-      const ctx = gsap.context(() => {
-        const photos = galleryRef.current!.querySelectorAll('.gallery-photo');
-        const title = galleryRef.current!.querySelector('h2');
+      const photos = galleryRef.current.querySelectorAll('.gallery-photo');
+      const title = galleryRef.current.querySelector('h2');
 
-        if (title) {
-          gsap.from(title, {
-            opacity: 0,
-            x: -30,
-            duration: 0.8,
-            ease: 'power2.out',
-            scrollTrigger: {
-              trigger: galleryRef.current,
-              start: 'top 85%',
-              toggleActions: 'play none none none',
-            },
-          });
-        }
+      // Refresh ScrollTrigger to recognize new elements
+      ScrollTrigger.refresh();
 
-        if (photos.length > 0) {
-          gsap.from(photos, {
-            opacity: 0,
-            scale: 0.9,
-            duration: 0.6,
-            stagger: 0.08,
-            ease: 'power2.out',
-            scrollTrigger: {
-              trigger: galleryRef.current,
-              start: 'top 85%',
-              toggleActions: 'play none none none',
-            },
-          });
+      if (title) {
+        gsap.from(title, {
+          opacity: 0,
+          x: -30,
+          duration: 0.8,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: galleryRef.current,
+            start: 'top 85%',
+            toggleActions: 'play none none none',
+          },
+        });
+      }
+
+      if (photos.length > 0) {
+        gsap.from(photos, {
+          opacity: 0,
+          scale: 0.9,
+          duration: 0.6,
+          stagger: 0.08,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: galleryRef.current,
+            start: 'top 85%',
+            toggleActions: 'play none none none',
+          },
+        });
+      }
+    });
+
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+      // Kill gallery-specific ScrollTriggers on cleanup
+      ScrollTrigger.getAll().forEach(trigger => {
+        if (trigger.trigger === galleryRef.current) {
+          trigger.kill();
         }
       });
-
-      return () => ctx.revert();
-    }, 100);
-
-    return () => clearTimeout(timer);
+    };
   }, [loading, location]);
 
   // Loading state
