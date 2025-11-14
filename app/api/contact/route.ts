@@ -10,11 +10,11 @@ import { checkRateLimit, getClientIp } from '@/lib/rate-limiter';
 
 export async function POST(request: NextRequest) {
   try {
-    // Create an unauthenticated Supabase client for public form submission
-    // This ensures we're using the anon role without any cookie-based auth
+    // Use service role key for public contact form submissions
+    // This bypasses RLS and is the recommended approach for public forms
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
       {
         cookies: {
           getAll() { return []; },

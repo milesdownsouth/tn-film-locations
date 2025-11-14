@@ -8,7 +8,14 @@
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import type { Location } from '@/types/database';
+
+// Register GSAP plugins
+if (typeof window !== 'undefined') {
+  gsap.registerPlugin(ScrollTrigger);
+}
 
 interface HomeContentProps {
   featuredLocations: Location[];
@@ -19,6 +26,11 @@ export default function HomeContent({ featuredLocations }: HomeContentProps) {
   const router = useRouter();
   const videoRef = useRef<HTMLVideoElement>(null);
   const fadeOverlayRef = useRef<HTMLDivElement>(null);
+  const heroTitleRef = useRef<HTMLHeadingElement>(null);
+  const heroSearchRef = useRef<HTMLFormElement>(null);
+  const whoIsItForRef = useRef<HTMLDivElement>(null);
+  const featuredRef = useRef<HTMLDivElement>(null);
+  const howItWorksRef = useRef<HTMLDivElement>(null);
 
   // Ensure video plays on mount and handle fade effect on loop
   useEffect(() => {
@@ -58,6 +70,119 @@ export default function HomeContent({ featuredLocations }: HomeContentProps) {
     return () => {
       video.removeEventListener('timeupdate', handleTimeUpdate);
     };
+  }, []);
+
+  // Hero animations
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      // Animate hero title - fade in and slide up
+      gsap.from(heroTitleRef.current, {
+        opacity: 0,
+        y: 50,
+        duration: 1.2,
+        ease: 'power3.out',
+        delay: 0.3,
+      });
+
+      // Animate search bar - fade in
+      gsap.from(heroSearchRef.current, {
+        opacity: 0,
+        y: 30,
+        duration: 1,
+        ease: 'power3.out',
+        delay: 0.6,
+      });
+    });
+
+    return () => ctx.revert();
+  }, []);
+
+  // Who Is It For section animations
+  useEffect(() => {
+    if (!whoIsItForRef.current) return;
+
+    const ctx = gsap.context(() => {
+      const cards = whoIsItForRef.current!.querySelectorAll('.feature-card');
+
+      gsap.from(cards, {
+        opacity: 0,
+        y: 60,
+        duration: 0.8,
+        stagger: 0.15,
+        ease: 'power3.out',
+        scrollTrigger: {
+          trigger: whoIsItForRef.current,
+          start: 'top 80%',
+          toggleActions: 'play none none none',
+        },
+      });
+    });
+
+    return () => ctx.revert();
+  }, []);
+
+  // Featured locations animations
+  useEffect(() => {
+    if (!featuredRef.current || featuredLocations.length === 0) return;
+
+    const ctx = gsap.context(() => {
+      const locationCards = featuredRef.current!.querySelectorAll('.location-card');
+
+      gsap.from(locationCards, {
+        opacity: 0,
+        y: 40,
+        scale: 0.95,
+        duration: 0.6,
+        stagger: 0.1,
+        ease: 'power2.out',
+        scrollTrigger: {
+          trigger: featuredRef.current,
+          start: 'top 85%',
+          toggleActions: 'play none none none',
+        },
+      });
+    });
+
+    return () => ctx.revert();
+  }, [featuredLocations]);
+
+  // How It Works animations
+  useEffect(() => {
+    if (!howItWorksRef.current) return;
+
+    const ctx = gsap.context(() => {
+      const steps = howItWorksRef.current!.querySelectorAll('.step-card');
+
+      gsap.from(steps, {
+        opacity: 0,
+        y: 50,
+        duration: 0.7,
+        stagger: 0.2,
+        ease: 'power3.out',
+        scrollTrigger: {
+          trigger: howItWorksRef.current,
+          start: 'top 80%',
+          toggleActions: 'play none none none',
+        },
+      });
+
+      // Animate the step numbers with a scale effect
+      const numbers = howItWorksRef.current!.querySelectorAll('.step-number');
+      gsap.from(numbers, {
+        scale: 0,
+        rotation: -180,
+        duration: 0.8,
+        stagger: 0.2,
+        ease: 'back.out(1.7)',
+        scrollTrigger: {
+          trigger: howItWorksRef.current,
+          start: 'top 80%',
+          toggleActions: 'play none none none',
+        },
+      });
+    });
+
+    return () => ctx.revert();
   }, []);
 
   const handleSearch = (e: React.FormEvent) => {
@@ -142,12 +267,12 @@ export default function HomeContent({ featuredLocations }: HomeContentProps) {
             padding: '0 1rem',
           }}
         >
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white text-center mb-8">
+          <h1 ref={heroTitleRef} className="text-4xl md:text-5xl lg:text-6xl font-bold text-white text-center mb-8">
             VENUE AND FILM LOCATIONS IN TENNESSEE
           </h1>
 
           {/* Search Bar */}
-          <form onSubmit={handleSearch} className="w-full max-w-3xl flex gap-4">
+          <form ref={heroSearchRef} onSubmit={handleSearch} className="w-full max-w-3xl flex gap-4">
             <input
               type="text"
               placeholder="Search by location type, city, or features..."
@@ -167,7 +292,7 @@ export default function HomeContent({ featuredLocations }: HomeContentProps) {
 
       {/* Who Is It For Section - Black Background */}
       <section className="bg-black text-white py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div ref={whoIsItForRef} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <p className="text-[#C41E3A] mb-4 uppercase text-sm font-medium">Who Is It For</p>
           <h2 className="text-3xl md:text-4xl font-bold mb-16">
             TAILORED LOCATIONS FOR<br />EVERY TYPE OF NEED.
@@ -178,7 +303,7 @@ export default function HomeContent({ featuredLocations }: HomeContentProps) {
             {/* Left Column */}
             <div className="space-y-12">
               {/* Film & TV Productions */}
-              <div>
+              <div className="feature-card">
                 <div className="w-16 h-16 rounded-full border-2 border-white flex items-center justify-center mb-4">
                   <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
@@ -192,7 +317,7 @@ export default function HomeContent({ featuredLocations }: HomeContentProps) {
               </div>
 
               {/* Event Professionals */}
-              <div>
+              <div className="feature-card">
                 <div className="w-16 h-16 rounded-full border-2 border-white flex items-center justify-center mb-4">
                   <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -209,7 +334,7 @@ export default function HomeContent({ featuredLocations }: HomeContentProps) {
             {/* Right Column */}
             <div className="space-y-12">
               {/* Commercial & Photo Shoots */}
-              <div>
+              <div className="feature-card">
                 <div className="w-16 h-16 rounded-full border-2 border-white flex items-center justify-center mb-4">
                   <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
@@ -224,7 +349,7 @@ export default function HomeContent({ featuredLocations }: HomeContentProps) {
               </div>
 
               {/* Red CTA Box */}
-              <div className="bg-[#C41E3A] p-8 rounded-lg">
+              <div className="feature-card bg-[#C41E3A] p-8 rounded-lg">
                 <h3 className="text-2xl font-bold mb-4">
                   NOT SURE HOW TO GET STARTED?
                 </h3>
@@ -244,7 +369,7 @@ export default function HomeContent({ featuredLocations }: HomeContentProps) {
 
       {/* Featured Locations - White Background */}
       <section className="bg-white py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div ref={featuredRef} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-4xl font-bold text-center text-black mb-12">
             FEATURED LOCATIONS
           </h2>
@@ -253,7 +378,7 @@ export default function HomeContent({ featuredLocations }: HomeContentProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {featuredLocations.map((location) => (
                 <Link key={location.id} href={`/locations/${location.id}`}>
-                  <div className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow cursor-pointer">
+                  <div className="location-card bg-white rounded-lg shadow hover:shadow-lg transition-shadow cursor-pointer">
                     <div className="relative h-64 rounded-t-lg overflow-hidden bg-gray-200">
                       {location.images && location.images.length > 0 ? (
                         <img
@@ -291,15 +416,15 @@ export default function HomeContent({ featuredLocations }: HomeContentProps) {
 
       {/* How It Works - Red Background */}
       <section className="bg-[#C41E3A] text-white py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div ref={howItWorksRef} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-4xl font-bold text-center mb-16">
             HOW IT WORKS
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
             {/* Step 1 */}
-            <div className="text-center">
-              <div className="w-20 h-20 rounded-full border-4 border-white flex items-center justify-center mx-auto mb-6">
+            <div className="step-card text-center">
+              <div className="step-number w-20 h-20 rounded-full border-4 border-white flex items-center justify-center mx-auto mb-6">
                 <span className="text-3xl font-bold">1</span>
               </div>
               <h3 className="text-2xl font-bold mb-4">SEARCH</h3>
@@ -309,8 +434,8 @@ export default function HomeContent({ featuredLocations }: HomeContentProps) {
             </div>
 
             {/* Step 2 */}
-            <div className="text-center">
-              <div className="w-20 h-20 rounded-full border-4 border-white flex items-center justify-center mx-auto mb-6">
+            <div className="step-card text-center">
+              <div className="step-number w-20 h-20 rounded-full border-4 border-white flex items-center justify-center mx-auto mb-6">
                 <span className="text-3xl font-bold">2</span>
               </div>
               <h3 className="text-2xl font-bold mb-4">SELECT</h3>
@@ -320,8 +445,8 @@ export default function HomeContent({ featuredLocations }: HomeContentProps) {
             </div>
 
             {/* Step 3 */}
-            <div className="text-center">
-              <div className="w-20 h-20 rounded-full border-4 border-white flex items-center justify-center mx-auto mb-6">
+            <div className="step-card text-center">
+              <div className="step-number w-20 h-20 rounded-full border-4 border-white flex items-center justify-center mx-auto mb-6">
                 <span className="text-3xl font-bold">3</span>
               </div>
               <h3 className="text-2xl font-bold mb-4">BOOK</h3>

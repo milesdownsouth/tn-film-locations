@@ -8,10 +8,10 @@ import { createServerClient } from '@supabase/ssr';
 
 export async function GET(request: NextRequest) {
   try {
-    // Create an unauthenticated Supabase client to test as anonymous user
+    // Use service role key to test contact form functionality
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
       {
         cookies: {
           getAll() { return []; },

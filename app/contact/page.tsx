@@ -4,7 +4,8 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import gsap from 'gsap';
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -20,6 +21,40 @@ export default function ContactPage() {
   const [error, setError] = useState<string | null>(null);
   const [honeypot, setHoneypot] = useState('');
   const [formLoadTime] = useState(Date.now());
+
+  const headerRef = useRef<HTMLDivElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  // Animate form on mount
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      // Animate header
+      if (headerRef.current) {
+        gsap.from(headerRef.current.children, {
+          opacity: 0,
+          y: 30,
+          duration: 0.8,
+          stagger: 0.2,
+          ease: 'power3.out',
+        });
+      }
+
+      // Animate form fields
+      if (formRef.current) {
+        const fields = formRef.current.querySelectorAll('.form-field');
+        gsap.from(fields, {
+          opacity: 0,
+          y: 20,
+          duration: 0.6,
+          stagger: 0.1,
+          ease: 'power2.out',
+          delay: 0.4,
+        });
+      }
+    });
+
+    return () => ctx.revert();
+  }, [submitted]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,7 +115,7 @@ export default function ContactPage() {
   return (
     <section className="bg-black text-white min-h-screen py-20">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
+        <div ref={headerRef} className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold mb-6">LET'S CONNECT</h1>
           <p className="text-gray-300 max-w-2xl mx-auto">
             Whether you're scouting for your next production, need help finding the perfect venue,
@@ -102,7 +137,7 @@ export default function ContactPage() {
                 <p>{error}</p>
               </div>
             )}
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
             {/* Honeypot field - hidden from users, catches bots */}
             <input
               type="text"
@@ -116,7 +151,7 @@ export default function ContactPage() {
             />
 
             {/* Name and Email Row */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="form-field grid grid-cols-1 md:grid-cols-2 gap-6">
               <input
                 type="text"
                 placeholder="Name"
@@ -136,7 +171,7 @@ export default function ContactPage() {
             </div>
 
             {/* Phone and Company Row */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="form-field grid grid-cols-1 md:grid-cols-2 gap-6">
               <input
                 type="tel"
                 placeholder="Phone"
@@ -156,17 +191,19 @@ export default function ContactPage() {
             </div>
 
             {/* Message Textarea */}
-            <textarea
-              placeholder="Tell us about your project and what you're looking for..."
-              required
-              rows={8}
-              value={formData.message}
-              onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-              className="w-full px-6 py-4 rounded bg-white text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#C41E3A]"
-            />
+            <div className="form-field">
+              <textarea
+                placeholder="Tell us about your project and what you're looking for..."
+                required
+                rows={8}
+                value={formData.message}
+                onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                className="w-full px-6 py-4 rounded bg-white text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#C41E3A]"
+              />
+            </div>
 
             {/* Submit Button */}
-            <div className="text-center">
+            <div className="form-field text-center">
               <button
                 type="submit"
                 disabled={loading}
