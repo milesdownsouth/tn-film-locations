@@ -46,8 +46,8 @@ export default function LocationDetailPage({ params }: { params: Promise<{ id: s
   const infoBarRef = useRef<HTMLDivElement>(null);
   const descriptionRef = useRef<HTMLElement>(null);
   const amenitiesRef = useRef<HTMLElement>(null);
-  const additionalInfoRef = useRef<HTMLElement>(null);
-  const buttonsRef = useRef<HTMLElement>(null);
+  const additionalInfoRef = useRef<HTMLDivElement>(null);
+  const buttonsRef = useRef<HTMLDivElement>(null);
   const galleryRef = useRef<HTMLElement>(null);
   const relatedRef = useRef<HTMLElement>(null);
 
