@@ -4,11 +4,18 @@
 
 'use client';
 
-import { useState, useEffect, use } from 'react';
+import { useState, useEffect, use, useRef } from 'react';
 import Link from 'next/link';
 import { Location } from '@/types/database';
 import { generateLocationsPDF } from '@/lib/pdf-generator';
 import { downloadLocationImagesAsZip } from '@/lib/zip-generator';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+// Register GSAP plugins
+if (typeof window !== 'undefined') {
+  gsap.registerPlugin(ScrollTrigger);
+}
 
 interface LocationDetailResponse {
   location: Location;
@@ -33,6 +40,16 @@ export default function LocationDetailPage({ params }: { params: Promise<{ id: s
   const [showPullSheetModal, setShowPullSheetModal] = useState(false);
   const [pullSheets, setPullSheets] = useState<PullSheet[]>([]);
   const [loadingPullSheets, setLoadingPullSheets] = useState(false);
+
+  // Animation refs
+  const heroRef = useRef<HTMLDivElement>(null);
+  const infoBarRef = useRef<HTMLDivElement>(null);
+  const descriptionRef = useRef<HTMLElement>(null);
+  const amenitiesRef = useRef<HTMLElement>(null);
+  const additionalInfoRef = useRef<HTMLElement>(null);
+  const buttonsRef = useRef<HTMLElement>(null);
+  const galleryRef = useRef<HTMLElement>(null);
+  const relatedRef = useRef<HTMLElement>(null);
 
   // Fetch location data
   useEffect(() => {
@@ -251,6 +268,178 @@ export default function LocationDetailPage({ params }: { params: Promise<{ id: s
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isLightboxOpen, location]);
 
+  // Animations
+  useEffect(() => {
+    if (loading || !location) return;
+
+    const ctx = gsap.context(() => {
+      // Animate hero section
+      if (heroRef.current) {
+        gsap.from(heroRef.current.children, {
+          opacity: 0,
+          y: 40,
+          duration: 1,
+          stagger: 0.15,
+          ease: 'power3.out',
+          delay: 0.2,
+        });
+      }
+
+      // Animate info bar
+      if (infoBarRef.current) {
+        const items = infoBarRef.current.children;
+        gsap.from(items, {
+          opacity: 0,
+          y: 30,
+          duration: 0.8,
+          stagger: 0.1,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: infoBarRef.current,
+            start: 'top 85%',
+            toggleActions: 'play none none none',
+          },
+        });
+      }
+
+      // Animate description section
+      if (descriptionRef.current) {
+        gsap.from(descriptionRef.current.children, {
+          opacity: 0,
+          y: 30,
+          duration: 0.8,
+          stagger: 0.1,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: descriptionRef.current,
+            start: 'top 85%',
+            toggleActions: 'play none none none',
+          },
+        });
+      }
+
+      // Animate amenities section
+      if (amenitiesRef.current) {
+        const tags = amenitiesRef.current.querySelectorAll('.amenity-tag');
+        gsap.from(amenitiesRef.current.querySelector('h2'), {
+          opacity: 0,
+          y: 20,
+          duration: 0.6,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: amenitiesRef.current,
+            start: 'top 85%',
+            toggleActions: 'play none none none',
+          },
+        });
+        gsap.from(tags, {
+          opacity: 0,
+          scale: 0.8,
+          duration: 0.5,
+          stagger: 0.05,
+          ease: 'back.out(1.7)',
+          scrollTrigger: {
+            trigger: amenitiesRef.current,
+            start: 'top 85%',
+            toggleActions: 'play none none none',
+          },
+        });
+      }
+
+      // Animate additional info section
+      if (additionalInfoRef.current) {
+        const items = additionalInfoRef.current.children;
+        gsap.from(items, {
+          opacity: 0,
+          y: 20,
+          duration: 0.6,
+          stagger: 0.1,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: additionalInfoRef.current,
+            start: 'top 85%',
+            toggleActions: 'play none none none',
+          },
+        });
+      }
+
+      // Animate download buttons
+      if (buttonsRef.current) {
+        const buttons = buttonsRef.current.children;
+        gsap.from(buttons, {
+          opacity: 0,
+          y: 20,
+          duration: 0.6,
+          stagger: 0.1,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: buttonsRef.current,
+            start: 'top 85%',
+            toggleActions: 'play none none none',
+          },
+        });
+      }
+
+      // Animate photo gallery
+      if (galleryRef.current) {
+        const photos = galleryRef.current.querySelectorAll('.gallery-photo');
+        gsap.from(galleryRef.current.querySelector('h2'), {
+          opacity: 0,
+          x: -30,
+          duration: 0.8,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: galleryRef.current,
+            start: 'top 85%',
+            toggleActions: 'play none none none',
+          },
+        });
+        gsap.from(photos, {
+          opacity: 0,
+          scale: 0.9,
+          duration: 0.6,
+          stagger: 0.08,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: galleryRef.current,
+            start: 'top 85%',
+            toggleActions: 'play none none none',
+          },
+        });
+      }
+
+      // Animate related locations
+      if (relatedRef.current) {
+        const cards = relatedRef.current.querySelectorAll('.related-card');
+        gsap.from(relatedRef.current.querySelector('h2'), {
+          opacity: 0,
+          y: 30,
+          duration: 0.8,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: relatedRef.current,
+            start: 'top 85%',
+            toggleActions: 'play none none none',
+          },
+        });
+        gsap.from(cards, {
+          opacity: 0,
+          y: 40,
+          duration: 0.8,
+          stagger: 0.1,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: relatedRef.current,
+            start: 'top 85%',
+            toggleActions: 'play none none none',
+          },
+        });
+      }
+    });
+
+    return () => ctx.revert();
+  }, [loading, location]);
+
   // Loading state
   if (loading) {
     return (
@@ -295,7 +484,7 @@ export default function LocationDetailPage({ params }: { params: Promise<{ id: s
           backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('${heroImage}')`
         }}
       >
-        <div className="absolute inset-0 flex flex-col justify-end px-8 pb-12">
+        <div ref={heroRef} className="absolute inset-0 flex flex-col justify-end px-8 pb-12">
           <p className="text-white text-lg mb-2">{location.city}, {location.county}</p>
           <h1 className="text-5xl md:text-6xl font-bold text-white uppercase">{location.name}</h1>
         </div>
@@ -312,7 +501,7 @@ export default function LocationDetailPage({ params }: { params: Promise<{ id: s
       {/* Info Bar */}
       <section className="bg-white py-8 border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div ref={infoBarRef} className="grid grid-cols-2 md:grid-cols-4 gap-8">
             <div className="text-center md:border-r border-gray-300">
               <p className="text-sm font-bold text-black uppercase mb-2">CITY</p>
               <p className="text-gray-700">{location.city}</p>
@@ -337,7 +526,7 @@ export default function LocationDetailPage({ params }: { params: Promise<{ id: s
 
       {/* Description */}
       {location.description && (
-        <section className="bg-white py-8 border-b border-gray-200">
+        <section ref={descriptionRef} className="bg-white py-8 border-b border-gray-200">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-2xl font-bold text-black mb-4">DESCRIPTION</h2>
             <p className="text-gray-700 leading-relaxed">{location.description}</p>
@@ -347,14 +536,14 @@ export default function LocationDetailPage({ params }: { params: Promise<{ id: s
 
       {/* Amenities */}
       {location.amenities && location.amenities.length > 0 && (
-        <section className="bg-white py-8 border-b border-gray-200">
+        <section ref={amenitiesRef} className="bg-white py-8 border-b border-gray-200">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-2xl font-bold text-black mb-4">AMENITIES</h2>
             <div className="flex flex-wrap gap-2">
               {location.amenities.map((amenity, index) => (
                 <span
                   key={index}
-                  className="bg-gray-100 text-gray-700 px-4 py-2 rounded-full text-sm"
+                  className="amenity-tag bg-gray-100 text-gray-700 px-4 py-2 rounded-full text-sm"
                 >
                   {amenity}
                 </span>
@@ -367,7 +556,7 @@ export default function LocationDetailPage({ params }: { params: Promise<{ id: s
       {/* Additional Info */}
       <section className="bg-white py-8 border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div ref={additionalInfoRef} className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {location.year_built && (
               <div>
                 <p className="text-sm font-bold text-black uppercase mb-2">YEAR BUILT</p>
@@ -393,7 +582,7 @@ export default function LocationDetailPage({ params }: { params: Promise<{ id: s
       {/* Download Buttons */}
       <section className="bg-white py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-center gap-4">
+          <div ref={buttonsRef} className="flex justify-center gap-4">
             <button
               onClick={handleDownloadPDF}
               className="bg-[#C41E3A] text-white px-8 py-3 rounded hover:bg-[#a01729] transition-colors font-bold uppercase"
@@ -419,14 +608,14 @@ export default function LocationDetailPage({ params }: { params: Promise<{ id: s
 
       {/* Photo Gallery */}
       {location.images && location.images.length > 0 && (
-        <section className="bg-white py-12">
+        <section ref={galleryRef} className="bg-white py-12">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-2xl font-bold text-black mb-6">PHOTO GALLERY</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {location.images.map((image, index) => (
                 <div
                   key={index}
-                  className="bg-gray-200 h-64 rounded-lg hover:opacity-90 transition-opacity cursor-pointer overflow-hidden"
+                  className="gallery-photo bg-gray-200 h-64 rounded-lg hover:opacity-90 transition-opacity cursor-pointer overflow-hidden"
                   onClick={() => openLightbox(index)}
                 >
                   <img
@@ -443,7 +632,7 @@ export default function LocationDetailPage({ params }: { params: Promise<{ id: s
 
       {/* Related Locations */}
       {relatedLocations.length > 0 && (
-        <section className="bg-white py-20">
+        <section ref={relatedRef} className="bg-white py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-4xl font-bold text-center text-black mb-12">
               RELATED LOCATIONS
@@ -452,7 +641,7 @@ export default function LocationDetailPage({ params }: { params: Promise<{ id: s
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {relatedLocations.map((loc) => (
                 <Link key={loc.id} href={`/locations/${loc.id}`}>
-                  <div className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow cursor-pointer">
+                  <div className="related-card bg-white rounded-lg shadow hover:shadow-lg transition-shadow cursor-pointer">
                     <div className="relative h-64 rounded-t-lg overflow-hidden bg-gray-200">
                       {loc.images && loc.images.length > 0 ? (
                         <img

@@ -2,9 +2,114 @@
  * About Page - Matches Design Exactly
  */
 
+'use client';
+
+import { useEffect, useRef } from 'react';
 import Link from 'next/link';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+// Register GSAP plugins
+if (typeof window !== 'undefined') {
+  gsap.registerPlugin(ScrollTrigger);
+}
 
 export default function AboutPage() {
+  const heroTextRef = useRef<HTMLDivElement>(null);
+  const photosRef = useRef<HTMLDivElement>(null);
+  const numbersRef = useRef<HTMLDivElement>(null);
+  const fredSectionRef = useRef<HTMLDivElement>(null);
+
+  // Hero animations
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      // Animate hero text
+      if (heroTextRef.current) {
+        gsap.from(heroTextRef.current.children, {
+          opacity: 0,
+          y: 40,
+          duration: 1,
+          stagger: 0.2,
+          ease: 'power3.out',
+          delay: 0.2,
+        });
+      }
+
+      // Animate overlapping photos
+      if (photosRef.current) {
+        const photos = photosRef.current.querySelectorAll('.photo-card');
+        gsap.from(photos, {
+          opacity: 0,
+          y: 60,
+          rotation: 0,
+          duration: 1.2,
+          stagger: 0.15,
+          ease: 'power3.out',
+          delay: 0.5,
+        });
+      }
+
+      // Animate numbers section with scroll trigger
+      if (numbersRef.current) {
+        const stats = numbersRef.current.querySelectorAll('.stat-item');
+        gsap.from(stats, {
+          opacity: 0,
+          y: 40,
+          duration: 0.8,
+          stagger: 0.1,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: numbersRef.current,
+            start: 'top 80%',
+            toggleActions: 'play none none none',
+          },
+        });
+
+        // Counter animation for numbers
+        const numbers = numbersRef.current.querySelectorAll('.stat-number');
+        numbers.forEach((number) => {
+          const target = number.textContent || '';
+          const numValue = parseInt(target.replace(/\D/g, ''));
+          const hasPlus = target.includes('+');
+
+          gsap.from(number, {
+            textContent: 0,
+            duration: 2,
+            ease: 'power1.out',
+            snap: { textContent: 1 },
+            scrollTrigger: {
+              trigger: numbersRef.current,
+              start: 'top 80%',
+              toggleActions: 'play none none none',
+            },
+            onUpdate: function () {
+              const current = Math.ceil((this.targets()[0] as any).textContent);
+              (number as HTMLElement).textContent = hasPlus ? `${current}+` : current.toString();
+            },
+          });
+        });
+      }
+
+      // Animate Fred Jove section
+      if (fredSectionRef.current) {
+        gsap.from(fredSectionRef.current.children, {
+          opacity: 0,
+          y: 40,
+          duration: 0.8,
+          stagger: 0.15,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: fredSectionRef.current,
+            start: 'top 80%',
+            toggleActions: 'play none none none',
+          },
+        });
+      }
+    });
+
+    return () => ctx.revert();
+  }, []);
+
   return (
     <div>
       {/* Hero Section - Black Background */}
@@ -12,7 +117,7 @@ export default function AboutPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* Left Side - Text */}
-            <div>
+            <div ref={heroTextRef}>
               <h1 className="text-4xl md:text-5xl font-bold mb-8">
                 WE HELP YOU FIND THE<br />RIGHT FILM LOCATION
               </h1>
@@ -27,23 +132,23 @@ export default function AboutPage() {
             </div>
 
             {/* Right Side - Overlapping Photos */}
-            <div className="relative h-[400px] hidden lg:block">
+            <div ref={photosRef} className="relative h-[400px] hidden lg:block">
               {/* Photo 1 - Back */}
-              <div className="absolute top-0 right-20 w-64 h-72 bg-gray-700 rounded-lg shadow-2xl transform rotate-6">
+              <div className="photo-card absolute top-0 right-20 w-64 h-72 bg-gray-700 rounded-lg shadow-2xl transform rotate-6">
                 <div className="w-full h-full bg-cover bg-center rounded-lg" style={{
                   backgroundImage: 'url(https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=400&h=500&fit=crop)'
                 }}></div>
               </div>
 
               {/* Photo 2 - Middle */}
-              <div className="absolute top-20 right-40 w-64 h-72 bg-gray-600 rounded-lg shadow-2xl transform -rotate-3">
+              <div className="photo-card absolute top-20 right-40 w-64 h-72 bg-gray-600 rounded-lg shadow-2xl transform -rotate-3">
                 <div className="w-full h-full bg-cover bg-center rounded-lg" style={{
                   backgroundImage: 'url(https://images.unsplash.com/photo-1558036117-15d82a90b9b1?w=400&h=500&fit=crop)'
                 }}></div>
               </div>
 
               {/* Photo 3 - Front */}
-              <div className="absolute bottom-0 right-0 w-64 h-72 bg-gray-500 rounded-lg shadow-2xl">
+              <div className="photo-card absolute bottom-0 right-0 w-64 h-72 bg-gray-500 rounded-lg shadow-2xl">
                 <div className="w-full h-full bg-cover bg-center rounded-lg" style={{
                   backgroundImage: 'url(https://images.unsplash.com/photo-1464207687429-7505649dae38?w=400&h=500&fit=crop)'
                 }}></div>
@@ -58,28 +163,28 @@ export default function AboutPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-4xl font-bold text-black mb-16">THE NUMBERS</h2>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div ref={numbersRef} className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {/* Stat 1 */}
-            <div className="text-center border-r border-gray-300 last:border-r-0">
-              <div className="text-5xl md:text-6xl font-bold text-black mb-2">150+</div>
+            <div className="stat-item text-center border-r border-gray-300 last:border-r-0">
+              <div className="stat-number text-5xl md:text-6xl font-bold text-black mb-2">150+</div>
               <div className="text-gray-600">Locations</div>
             </div>
 
             {/* Stat 2 */}
-            <div className="text-center border-r border-gray-300 last:border-r-0">
-              <div className="text-5xl md:text-6xl font-bold text-black mb-2">40</div>
+            <div className="stat-item text-center border-r border-gray-300 last:border-r-0">
+              <div className="stat-number text-5xl md:text-6xl font-bold text-black mb-2">40</div>
               <div className="text-gray-600">City's</div>
             </div>
 
             {/* Stat 3 */}
-            <div className="text-center border-r border-gray-300 last:border-r-0">
-              <div className="text-5xl md:text-6xl font-bold text-black mb-2">30+</div>
+            <div className="stat-item text-center border-r border-gray-300 last:border-r-0">
+              <div className="stat-number text-5xl md:text-6xl font-bold text-black mb-2">30+</div>
               <div className="text-gray-600">Yrs of Scouting<br />Experience</div>
             </div>
 
             {/* Stat 4 */}
-            <div className="text-center">
-              <div className="text-5xl md:text-6xl font-bold text-black mb-2">100</div>
+            <div className="stat-item text-center">
+              <div className="stat-number text-5xl md:text-6xl font-bold text-black mb-2">100</div>
               <div className="text-gray-600">Yearly Bookings</div>
             </div>
           </div>
@@ -94,7 +199,7 @@ export default function AboutPage() {
             <div className="bg-gray-300 h-96 rounded-lg"></div>
 
             {/* Right Side - Bio */}
-            <div>
+            <div ref={fredSectionRef}>
               <h2 className="text-4xl font-bold mb-2">FRED JOVE</h2>
               <p className="text-sm mb-6 opacity-90">Founder & Location Scout</p>
               <p className="text-white mb-4">

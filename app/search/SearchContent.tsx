@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Location } from '@/types/database';
+import gsap from 'gsap';
 
 interface LocationsResponse {
   locations: Location[];
@@ -27,6 +28,10 @@ interface LocationsResponse {
 export default function SearchContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  const headerRef = useRef<HTMLHeadingElement>(null);
+  const filtersRef = useRef<HTMLDivElement>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
 
   const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
   const [city, setCity] = useState(searchParams.get('city') || '');
@@ -118,6 +123,46 @@ export default function SearchContent() {
     fetchLocations();
   }, [searchQuery, city, county, propertyType, selectedAmenities, currentPage]);
 
+  // Animations
+  useEffect(() => {
+    // Animate header on mount
+    if (headerRef.current) {
+      gsap.from(headerRef.current, {
+        opacity: 0,
+        y: 30,
+        duration: 0.8,
+        ease: 'power3.out',
+      });
+    }
+
+    // Animate filters on mount
+    if (filtersRef.current) {
+      const filters = filtersRef.current.children;
+      gsap.from(filters, {
+        opacity: 0,
+        y: 20,
+        duration: 0.6,
+        stagger: 0.1,
+        ease: 'power2.out',
+        delay: 0.3,
+      });
+    }
+  }, []);
+
+  // Animate location cards when they change
+  useEffect(() => {
+    if (!loading && gridRef.current && locations.length > 0) {
+      const cards = gridRef.current.children;
+      gsap.from(cards, {
+        opacity: 0,
+        y: 30,
+        duration: 0.6,
+        stagger: 0.08,
+        ease: 'power2.out',
+      });
+    }
+  }, [locations, loading]);
+
   // Update URL with current filters
   const updateURL = () => {
     const params = new URLSearchParams();
@@ -167,7 +212,7 @@ export default function SearchContent() {
     <div className="bg-white min-h-screen py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <h1 className="text-5xl font-bold text-black text-center mb-12">
+        <h1 ref={headerRef} className="text-5xl font-bold text-black text-center mb-12">
           LOCATION SEARCH
         </h1>
 
@@ -191,7 +236,7 @@ export default function SearchContent() {
         </form>
 
         {/* Filters */}
-        <div className="flex flex-wrap gap-4 mb-12">
+        <div ref={filtersRef} className="flex flex-wrap gap-4 mb-12">
           <select
             value={propertyType}
             onChange={(e) => handleFilterChange('propertyType', e.target.value)}
@@ -344,7 +389,7 @@ export default function SearchContent() {
                 <p className="text-gray-500">Try adjusting your search or filters</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+              <div ref={gridRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
                 {locations.map((location) => (
                   <Link key={location.id} href={`/locations/${location.id}`}>
                     <div className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow cursor-pointer">
