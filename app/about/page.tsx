@@ -98,7 +98,7 @@ export default function AboutPage() {
               <h2 className="text-4xl font-bold mb-2">FRED JOVE</h2>
               <p className="text-sm mb-6 opacity-90">Founder & Location Scout</p>
               <p className="text-white mb-4">
-                With over 30 years in the film and location scouting industry, [Name] founded TN Film Locations to solve a problem he saw repeatedly: talented production teams spending valuable time and resources searching for the right venue.
+                With over 30 years in the film and location scouting industry, Fred founded TN Film Locations to solve a problem he saw repeatedly: talented production teams spending valuable time and resources searching for the right venue.
               </p>
               <p className="text-white mb-4">
                 What started as a personal network of trusted locations has grown into Tennessee's most comprehensive film location database. Today, we work with productions of all sizes—from independent filmmakers to major studios—helping them discover spaces that exceed expectations and stay within budget.
