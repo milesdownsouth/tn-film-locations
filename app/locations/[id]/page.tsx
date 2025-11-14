@@ -381,31 +381,38 @@ export default function LocationDetailPage({ params }: { params: Promise<{ id: s
       }
 
       // Animate photo gallery
-      if (galleryRef.current) {
+      if (galleryRef.current && location.images && location.images.length > 0) {
         const photos = galleryRef.current.querySelectorAll('.gallery-photo');
-        gsap.from(galleryRef.current.querySelector('h2'), {
-          opacity: 0,
-          x: -30,
-          duration: 0.8,
-          ease: 'power2.out',
-          scrollTrigger: {
-            trigger: galleryRef.current,
-            start: 'top 85%',
-            toggleActions: 'play none none none',
-          },
-        });
-        gsap.from(photos, {
-          opacity: 0,
-          scale: 0.9,
-          duration: 0.6,
-          stagger: 0.08,
-          ease: 'power2.out',
-          scrollTrigger: {
-            trigger: galleryRef.current,
-            start: 'top 85%',
-            toggleActions: 'play none none none',
-          },
-        });
+        const title = galleryRef.current.querySelector('h2');
+
+        if (title) {
+          gsap.from(title, {
+            opacity: 0,
+            x: -30,
+            duration: 0.8,
+            ease: 'power2.out',
+            scrollTrigger: {
+              trigger: galleryRef.current,
+              start: 'top 85%',
+              toggleActions: 'play none none none',
+            },
+          });
+        }
+
+        if (photos.length > 0) {
+          gsap.from(photos, {
+            opacity: 0,
+            scale: 0.9,
+            duration: 0.6,
+            stagger: 0.08,
+            ease: 'power2.out',
+            scrollTrigger: {
+              trigger: galleryRef.current,
+              start: 'top 85%',
+              toggleActions: 'play none none none',
+            },
+          });
+        }
       }
 
       // Animate related locations
