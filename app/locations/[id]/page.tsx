@@ -380,10 +380,56 @@ export default function LocationDetailPage({ params }: { params: Promise<{ id: s
         });
       }
 
-      // Animate photo gallery
-      if (galleryRef.current && location.images && location.images.length > 0) {
-        const photos = galleryRef.current.querySelectorAll('.gallery-photo');
-        const title = galleryRef.current.querySelector('h2');
+      // Animate related locations
+      if (relatedRef.current && relatedLocations.length > 0) {
+        const cards = relatedRef.current.querySelectorAll('.related-card');
+        const title = relatedRef.current.querySelector('h2');
+
+        if (title) {
+          gsap.from(title, {
+            opacity: 0,
+            y: 30,
+            duration: 0.8,
+            ease: 'power2.out',
+            scrollTrigger: {
+              trigger: relatedRef.current,
+              start: 'top 85%',
+              toggleActions: 'play none none none',
+            },
+          });
+        }
+
+        if (cards.length > 0) {
+          gsap.from(cards, {
+            opacity: 0,
+            y: 40,
+            duration: 0.8,
+            stagger: 0.1,
+            ease: 'power2.out',
+            scrollTrigger: {
+              trigger: relatedRef.current,
+              start: 'top 85%',
+              toggleActions: 'play none none none',
+            },
+          });
+        }
+      }
+    });
+
+    return () => ctx.revert();
+  }, [loading, location, relatedLocations]);
+
+  // Separate effect for gallery animation to ensure DOM is ready
+  useEffect(() => {
+    if (loading || !location || !location.images || location.images.length === 0) return;
+
+    // Small delay to ensure DOM is fully rendered
+    const timer = setTimeout(() => {
+      if (!galleryRef.current) return;
+
+      const ctx = gsap.context(() => {
+        const photos = galleryRef.current!.querySelectorAll('.gallery-photo');
+        const title = galleryRef.current!.querySelector('h2');
 
         if (title) {
           gsap.from(title, {
@@ -413,38 +459,12 @@ export default function LocationDetailPage({ params }: { params: Promise<{ id: s
             },
           });
         }
-      }
+      });
 
-      // Animate related locations
-      if (relatedRef.current) {
-        const cards = relatedRef.current.querySelectorAll('.related-card');
-        gsap.from(relatedRef.current.querySelector('h2'), {
-          opacity: 0,
-          y: 30,
-          duration: 0.8,
-          ease: 'power2.out',
-          scrollTrigger: {
-            trigger: relatedRef.current,
-            start: 'top 85%',
-            toggleActions: 'play none none none',
-          },
-        });
-        gsap.from(cards, {
-          opacity: 0,
-          y: 40,
-          duration: 0.8,
-          stagger: 0.1,
-          ease: 'power2.out',
-          scrollTrigger: {
-            trigger: relatedRef.current,
-            start: 'top 85%',
-            toggleActions: 'play none none none',
-          },
-        });
-      }
-    });
+      return () => ctx.revert();
+    }, 100);
 
-    return () => ctx.revert();
+    return () => clearTimeout(timer);
   }, [loading, location]);
 
   // Loading state
