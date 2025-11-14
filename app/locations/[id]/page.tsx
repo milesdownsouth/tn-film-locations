@@ -419,58 +419,36 @@ export default function LocationDetailPage({ params }: { params: Promise<{ id: s
     return () => ctx.revert();
   }, [loading, location, relatedLocations]);
 
-  // Gallery animation using IntersectionObserver for reliability
+  // Simple gallery animation on mount
   useEffect(() => {
     if (loading || !location || !location.images || location.images.length === 0) return;
     if (!galleryRef.current) return;
 
-    const galleryElement = galleryRef.current;
-    let hasAnimated = false;
+    const ctx = gsap.context(() => {
+      const title = galleryRef.current?.querySelector('h2');
+      const photos = galleryRef.current?.querySelectorAll('.gallery-photo');
 
-    // Use IntersectionObserver to detect when gallery comes into view
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting && !hasAnimated) {
-            hasAnimated = true;
-
-            const photos = galleryElement.querySelectorAll('.gallery-photo');
-            const title = galleryElement.querySelector('h2');
-
-            // Animate title
-            if (title) {
-              gsap.from(title, {
-                opacity: 0,
-                x: -30,
-                duration: 0.8,
-                ease: 'power2.out',
-              });
-            }
-
-            // Animate photos
-            if (photos.length > 0) {
-              gsap.from(photos, {
-                opacity: 0,
-                scale: 0.9,
-                duration: 0.6,
-                stagger: 0.08,
-                ease: 'power2.out',
-              });
-            }
-          }
+      // Simple fade in for title
+      if (title) {
+        gsap.to(title, {
+          opacity: 1,
+          duration: 0.5,
+          ease: 'power2.out',
         });
-      },
-      {
-        threshold: 0.2, // Trigger when 20% of the element is visible
-        rootMargin: '0px 0px -100px 0px' // Start slightly before it comes into view
       }
-    );
 
-    observer.observe(galleryElement);
+      // Simple fade in for photos
+      if (photos && photos.length > 0) {
+        gsap.to(photos, {
+          opacity: 1,
+          duration: 0.5,
+          stagger: 0.05,
+          ease: 'power2.out',
+        });
+      }
+    }, galleryRef);
 
-    return () => {
-      observer.disconnect();
-    };
+    return () => ctx.revert();
   }, [loading, location]);
 
   // Loading state
@@ -643,12 +621,13 @@ export default function LocationDetailPage({ params }: { params: Promise<{ id: s
       {location.images && location.images.length > 0 && (
         <section ref={galleryRef} className="bg-white py-12">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-2xl font-bold text-black mb-6">PHOTO GALLERY</h2>
+            <h2 className="text-2xl font-bold text-black mb-6" style={{ opacity: 0 }}>PHOTO GALLERY</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {location.images.map((image, index) => (
                 <div
                   key={index}
                   className="gallery-photo bg-gray-200 h-64 rounded-lg hover:opacity-90 transition-opacity cursor-pointer overflow-hidden"
+                  style={{ opacity: 0 }}
                   onClick={() => openLightbox(index)}
                 >
                   <img
