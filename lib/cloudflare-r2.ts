@@ -1,9 +1,10 @@
 /**
  * Cloudflare R2 Integration
- * Handles image uploads and management
+ * Handles image uploads and management with automatic optimization
  */
 
 import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
+import sharp from 'sharp';
 
 // Initialize R2 client (R2 is S3-compatible)
 export function getR2Client() {
@@ -18,7 +19,12 @@ export function getR2Client() {
 }
 
 /**
- * Upload an image to Cloudflare R2
+ * Upload an image to Cloudflare R2 with automatic optimization
+ * - Converts to WebP format (60-80% smaller than JPG/PNG)
+ * - Resizes to max 1920x1920 (maintains aspect ratio)
+ * - Optimizes quality (85% - excellent quality, smaller size)
+ * - Strips metadata for privacy and smaller file size
+ *
  * @param file - The file to upload
  * @param locationId - The location ID (for organizing files)
  * @returns The public URL of the uploaded image
@@ -29,13 +35,29 @@ export async function uploadImage(
 ): Promise<string> {
   const client = getR2Client();
   const timestamp = Date.now();
-  const fileName = `locations/${locationId}/${timestamp}-${file.name}`;
+
+  // Get original filename without extension
+  const originalName = file.name.replace(/\.[^/.]+$/, '');
+  const fileName = `locations/${locationId}/${timestamp}-${originalName}.webp`;
+
+  // Process image with Sharp
+  const buffer = Buffer.from(await file.arrayBuffer());
+  const optimizedBuffer = await sharp(buffer)
+    .resize(1920, 1920, {
+      fit: 'inside', // Maintain aspect ratio, don't enlarge
+      withoutEnlargement: true // Don't upscale smaller images
+    })
+    .webp({
+      quality: 85, // High quality, good compression
+      effort: 4 // Balance between compression and speed
+    })
+    .toBuffer();
 
   const command = new PutObjectCommand({
     Bucket: process.env.R2_BUCKET_NAME!,
     Key: fileName,
-    Body: Buffer.from(await file.arrayBuffer()),
-    ContentType: file.type,
+    Body: optimizedBuffer,
+    ContentType: 'image/webp',
   });
 
   await client.send(command);
