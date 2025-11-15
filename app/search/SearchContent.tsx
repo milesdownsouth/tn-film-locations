@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Location } from '@/types/database';
 import gsap from 'gsap';
+import CameraApertureLoader from '@/components/CameraApertureLoader';
 
 interface LocationsResponse {
   locations: Location[];
@@ -362,8 +363,7 @@ export default function SearchContent() {
         {/* Loading State */}
         {loading && (
           <div className="text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#C41E3A]"></div>
-            <p className="mt-4 text-gray-600">Loading locations...</p>
+            <CameraApertureLoader message="Loading locations..." />
           </div>
         )}
 

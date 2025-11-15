@@ -8,6 +8,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Location } from '@/types/database';
+import CameraApertureLoader from '@/components/CameraApertureLoader';
 
 export default function SavedLocationsContent() {
   const [locations, setLocations] = useState<Location[]>([]);
@@ -77,8 +78,7 @@ export default function SavedLocationsContent() {
         {/* Loading State */}
         {loading && (
           <div className="text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#C41E3A]"></div>
-            <p className="mt-4 text-gray-600">Loading saved locations...</p>
+            <CameraApertureLoader message="Loading saved locations..." />
           </div>
         )}
 

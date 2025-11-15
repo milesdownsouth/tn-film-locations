@@ -11,6 +11,7 @@ import { generateLocationsPDF } from '@/lib/pdf-generator';
 import { downloadLocationImagesAsZip } from '@/lib/zip-generator';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import CameraApertureLoader from '@/components/CameraApertureLoader';
 
 // Register GSAP plugins
 if (typeof window !== 'undefined') {
@@ -455,10 +456,7 @@ export default function LocationDetailPage({ params }: { params: Promise<{ id: s
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#C41E3A]"></div>
-          <p className="mt-4 text-gray-600">Loading location...</p>
-        </div>
+        <CameraApertureLoader message="Loading location..." />
       </div>
     );
   }
@@ -775,8 +773,7 @@ export default function LocationDetailPage({ params }: { params: Promise<{ id: s
 
               {loadingPullSheets ? (
                 <div className="text-center py-12">
-                  <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#C41E3A]"></div>
-                  <p className="mt-4 text-gray-600">Loading pull sheets...</p>
+                  <CameraApertureLoader message="Loading pull sheets..." />
                 </div>
               ) : pullSheets.length === 0 ? (
                 <div className="text-center py-12">

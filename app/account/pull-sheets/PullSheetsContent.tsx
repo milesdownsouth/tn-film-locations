@@ -8,6 +8,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import CameraApertureLoader from '@/components/CameraApertureLoader';
 
 interface PullSheet {
   id: string;
@@ -101,8 +102,7 @@ export default function PullSheetsContent() {
         {/* Loading State */}
         {loading && (
           <div className="text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#C41E3A]"></div>
-            <p className="mt-4 text-gray-600">Loading pull sheets...</p>
+            <CameraApertureLoader message="Loading pull sheets..." />
           </div>
         )}
 
