@@ -593,23 +593,23 @@ export default function LocationDetailPage({ params }: { params: Promise<{ id: s
       {/* Download Buttons */}
       <section className="bg-white py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div ref={buttonsRef} className="flex justify-center gap-4">
+          <div ref={buttonsRef} className="grid grid-cols-2 md:grid-cols-3 gap-3 max-w-3xl mx-auto">
             <button
               onClick={handleDownloadPDF}
-              className="bg-[#C41E3A] text-white px-8 py-3 rounded hover:bg-[#a01729] transition-colors font-bold uppercase"
+              className="bg-[#C41E3A] text-white px-4 py-2 md:px-8 md:py-3 rounded hover:bg-[#a01729] transition-colors font-bold uppercase text-sm md:text-base"
             >
               DOWNLOAD PDF
             </button>
             <button
               onClick={handleDownloadZIP}
               disabled={!location.images || location.images.length === 0}
-              className="bg-[#C41E3A] text-white px-8 py-3 rounded hover:bg-[#a01729] transition-colors font-bold uppercase disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-[#C41E3A] text-white px-4 py-2 md:px-8 md:py-3 rounded hover:bg-[#a01729] transition-colors font-bold uppercase text-sm md:text-base disabled:opacity-50 disabled:cursor-not-allowed"
             >
               DOWNLOAD ZIP
             </button>
             <button
               onClick={handleAddToPullSheet}
-              className="bg-gray-800 text-white px-8 py-3 rounded hover:bg-gray-900 transition-colors font-bold uppercase"
+              className="bg-gray-800 text-white px-4 py-2 md:px-8 md:py-3 rounded hover:bg-gray-900 transition-colors font-bold uppercase text-sm md:text-base col-span-2 md:col-span-1"
             >
               ADD TO PULL SHEET
             </button>
