@@ -9,6 +9,7 @@ import Link from 'next/link';
 import { Location } from '@/types/database';
 import { generateLocationsPDF } from '@/lib/pdf-generator';
 import { downloadLocationImagesAsZip } from '@/lib/zip-generator';
+import LottieLoader from '@/components/LottieLoader';
 
 interface LocationDetailResponse {
   location: Location;
@@ -85,10 +86,7 @@ export default function LocationDetailPage({ params }: { params: Promise<{ id: s
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#C41E3A]"></div>
-          <p className="mt-4 text-gray-600">Loading location...</p>
-        </div>
+        <LottieLoader message="Loading location..." size={150} />
       </div>
     );
   }
