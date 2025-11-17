@@ -9,6 +9,9 @@ export const metadata: Metadata = {
   description: "Discover and manage film locations across Tennessee. Find the perfect setting for your next production with our comprehensive location database.",
 };
 
+// Mark layout as dynamic since we use cookies for authentication
+export const dynamic = 'force-dynamic';
+
 export default async function RootLayout({
   children,
 }: Readonly<{
