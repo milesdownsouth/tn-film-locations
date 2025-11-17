@@ -11,7 +11,7 @@
   --color-foreground: var(--foreground);
   --color-brand-red: var(--brand-red);
   --font-sans: "Open Sans", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-heading: "Anton", ui-sans-serif, system-ui, sans-serif;
+  --font-heading: "Antonio", ui-sans-serif, system-ui, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
