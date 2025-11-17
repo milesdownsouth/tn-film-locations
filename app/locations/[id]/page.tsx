@@ -151,6 +151,14 @@ export default function LocationDetailPage({ params }: { params: Promise<{ id: s
     if (!location) return;
 
     try {
+      // Check authentication before allowing download
+      const authCheck = await fetch('/api/saved-locations');
+      if (authCheck.status === 401) {
+        alert('Please log in to download PDFs');
+        window.location.href = '/auth/login';
+        return;
+      }
+
       const { downloadLocationsPDF } = await import('@/lib/pdf-generator');
       downloadLocationsPDF([location], 'guest@tnfilmlocations.com');
     } catch (err) {
@@ -163,6 +171,14 @@ export default function LocationDetailPage({ params }: { params: Promise<{ id: s
     if (!location) return;
 
     try {
+      // Check authentication before allowing download
+      const authCheck = await fetch('/api/saved-locations');
+      if (authCheck.status === 401) {
+        alert('Please log in to download images');
+        window.location.href = '/auth/login';
+        return;
+      }
+
       await downloadLocationImagesAsZip(location.name, location.images || []);
     } catch (err) {
       console.error('Error downloading ZIP:', err);
