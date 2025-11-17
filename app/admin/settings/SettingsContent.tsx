@@ -80,7 +80,7 @@ export default function SettingsContent() {
   return (
     <div className="min-h-screen bg-white">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h1 className="text-4xl font-bold text-black mb-8">Site Settings</h1>
+        <h1 className="text-4xl font-semibold text-black mb-8">Site Settings</h1>
 
         {loading ? (
           <div className="text-center py-12">
@@ -90,7 +90,7 @@ export default function SettingsContent() {
           <div className="space-y-8">
             {/* Contact Email Setting */}
             <div className="bg-white border border-gray-200 rounded-lg p-6">
-              <h2 className="text-2xl font-bold text-black mb-4">Contact Form Notifications</h2>
+              <h2 className="text-2xl font-semibold text-black mb-4">Contact Form Notifications</h2>
               <p className="text-gray-600 mb-6">
                 Configure where contact form submissions are sent. This email will receive notifications
                 whenever someone submits the contact form on your website.
@@ -131,7 +131,7 @@ export default function SettingsContent() {
 
             {/* Email Configuration Info */}
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-              <h3 className="text-lg font-bold text-blue-900 mb-2">Email Configuration</h3>
+              <h3 className="text-lg font-semibold text-blue-900 mb-2">Email Configuration</h3>
               <p className="text-blue-800 mb-4">
                 To enable email notifications, you need to configure Resend in your environment variables.
               </p>
@@ -146,7 +146,7 @@ export default function SettingsContent() {
 
             {/* Domain Configuration Info */}
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-              <h3 className="text-lg font-bold text-yellow-900 mb-2">Email Domain Configuration</h3>
+              <h3 className="text-lg font-semibold text-yellow-900 mb-2">Email Domain Configuration</h3>
               <p className="text-yellow-800 mb-4">
                 For production use, you should verify your domain with Resend to send emails from your own domain
                 (e.g., noreply@tnfilmlocations.com).

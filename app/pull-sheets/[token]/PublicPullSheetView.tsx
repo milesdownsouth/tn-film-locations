@@ -40,7 +40,7 @@ export default function PublicPullSheetView({ pullSheet }: PublicPullSheetViewPr
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-5xl font-bold text-black mb-2">{pullSheet.name}</h1>
+          <h1 className="text-5xl font-semibold text-black mb-2">{pullSheet.name}</h1>
           {pullSheet.description && (
             <p className="text-gray-600 text-lg mt-2">{pullSheet.description}</p>
           )}
@@ -79,7 +79,7 @@ export default function PublicPullSheetView({ pullSheet }: PublicPullSheetViewPr
                 </div>
                 <div className="p-4">
                   <p className="text-gray-600 text-sm">{location.city}, {location.county}</p>
-                  <h3 className="text-lg font-bold text-black">{location.name}</h3>
+                  <h3 className="text-lg font-semibold text-black">{location.name}</h3>
                   <p className="text-gray-500 text-sm mt-1 capitalize">
                     {location.property_type}
                   </p>

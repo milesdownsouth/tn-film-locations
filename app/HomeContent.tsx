@@ -267,7 +267,7 @@ export default function HomeContent({ featuredLocations }: HomeContentProps) {
             padding: '0 1rem',
           }}
         >
-          <h1 ref={heroTitleRef} className="text-4xl md:text-5xl lg:text-6xl font-bold text-white text-center mb-8">
+          <h1 ref={heroTitleRef} className="text-4xl md:text-5xl lg:text-6xl font-semibold text-white text-center mb-8">
             VENUE AND FILM LOCATIONS IN TENNESSEE
           </h1>
 
@@ -294,7 +294,7 @@ export default function HomeContent({ featuredLocations }: HomeContentProps) {
       <section className="bg-black text-white py-20">
         <div ref={whoIsItForRef} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <p className="text-[#C41E3A] mb-4 uppercase text-sm font-medium">Who Is It For</p>
-          <h2 className="text-3xl md:text-4xl font-bold mb-16">
+          <h2 className="text-3xl md:text-4xl font-semibold mb-16">
             TAILORED LOCATIONS FOR<br />EVERY TYPE OF NEED.
           </h2>
 
@@ -309,7 +309,7 @@ export default function HomeContent({ featuredLocations }: HomeContentProps) {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                   </svg>
                 </div>
-                <h3 className="text-xl font-bold mb-3">FILM & TV PRODUCTIONS</h3>
+                <h3 className="text-xl font-semibold mb-3">FILM & TV PRODUCTIONS</h3>
                 <p className="text-sm text-gray-400">Find your perfect scene</p>
                 <p className="text-sm text-gray-300 mt-4">
                   From urban streetscapes to rolling countryside, discover locations that bring your script to life. Our curated database includes detailed amenities, permitting information, and high-resolution photos to streamline your location scouting process.
@@ -323,7 +323,7 @@ export default function HomeContent({ featuredLocations }: HomeContentProps) {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
                 </div>
-                <h3 className="text-xl font-bold mb-3">EVENT PROFESSIONALS</h3>
+                <h3 className="text-xl font-semibold mb-3">EVENT PROFESSIONALS</h3>
                 <p className="text-sm text-gray-400">Memorable spaces for every occasion</p>
                 <p className="text-sm text-gray-300 mt-4">
                   Whether you're planning a corporate event, wedding, or special production, explore Tennessee's most distinctive venues. Filter by capacity, style, and amenities to find spaces that exceed your client's expectations.
@@ -341,7 +341,7 @@ export default function HomeContent({ featuredLocations }: HomeContentProps) {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
                 </div>
-                <h3 className="text-xl font-bold mb-3">COMMERCIAL & PHOTO SHOOTS</h3>
+                <h3 className="text-xl font-semibold mb-3">COMMERCIAL & PHOTO SHOOTS</h3>
                 <p className="text-sm text-gray-400">Stunning backdrops for any vision</p>
                 <p className="text-sm text-gray-300 mt-4">
                   Access unique Tennessee venues perfect for commercials, product photography, and brand content. Each location includes comprehensive details about access, lighting conditions, and available facilities to ensure your shoot runs smoothly.
@@ -350,7 +350,7 @@ export default function HomeContent({ featuredLocations }: HomeContentProps) {
 
               {/* Red CTA Box */}
               <div className="feature-card bg-[#C41E3A] p-8 rounded-lg">
-                <h3 className="text-2xl font-bold mb-4">
+                <h3 className="text-2xl font-semibold mb-4">
                   NOT SURE HOW TO GET STARTED?
                 </h3>
                 <p className="text-sm mb-6">
@@ -370,7 +370,7 @@ export default function HomeContent({ featuredLocations }: HomeContentProps) {
       {/* Featured Locations - White Background */}
       <section className="bg-white py-20">
         <div ref={featuredRef} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-4xl font-bold text-center text-black mb-12">
+          <h2 className="text-4xl font-semibold text-center text-black mb-12">
             FEATURED LOCATIONS
           </h2>
 
@@ -417,7 +417,7 @@ export default function HomeContent({ featuredLocations }: HomeContentProps) {
       {/* How It Works - Red Background */}
       <section className="bg-[#C41E3A] text-white py-20">
         <div ref={howItWorksRef} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-4xl font-bold text-center mb-16">
+          <h2 className="text-4xl font-semibold text-center mb-16">
             HOW IT WORKS
           </h2>
 
@@ -427,7 +427,7 @@ export default function HomeContent({ featuredLocations }: HomeContentProps) {
               <div className="step-number w-20 h-20 rounded-full border-4 border-white flex items-center justify-center mx-auto mb-6">
                 <span className="text-3xl font-bold">1</span>
               </div>
-              <h3 className="text-2xl font-bold mb-4">SEARCH</h3>
+              <h3 className="text-2xl font-semibold mb-4">SEARCH</h3>
               <p className="text-sm">
                 Browse our collection of film friendly locations across Tennessee.
               </p>
@@ -438,7 +438,7 @@ export default function HomeContent({ featuredLocations }: HomeContentProps) {
               <div className="step-number w-20 h-20 rounded-full border-4 border-white flex items-center justify-center mx-auto mb-6">
                 <span className="text-3xl font-bold">2</span>
               </div>
-              <h3 className="text-2xl font-bold mb-4">SELECT</h3>
+              <h3 className="text-2xl font-semibold mb-4">SELECT</h3>
               <p className="text-sm">
                 Create a pull file of the locations that match your creative vision
               </p>
@@ -449,7 +449,7 @@ export default function HomeContent({ featuredLocations }: HomeContentProps) {
               <div className="step-number w-20 h-20 rounded-full border-4 border-white flex items-center justify-center mx-auto mb-6">
                 <span className="text-3xl font-bold">3</span>
               </div>
-              <h3 className="text-2xl font-bold mb-4">BOOK</h3>
+              <h3 className="text-2xl font-semibold mb-4">BOOK</h3>
               <p className="text-sm">
                 Contact us to reserve your location and make the needed arrangements
               </p>

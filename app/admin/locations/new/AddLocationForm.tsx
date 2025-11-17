@@ -185,7 +185,7 @@ export default function AddLocationForm() {
         </div>
 
         <div className="bg-white rounded-lg shadow p-6">
-          <h1 className="text-3xl font-bold text-black mb-6">Add New Location</h1>
+          <h1 className="text-3xl font-semibold text-black mb-6">Add New Location</h1>
 
           {error && (
             <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
@@ -196,7 +196,7 @@ export default function AddLocationForm() {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Basic Information */}
             <div>
-              <h2 className="text-xl font-bold text-black mb-4">Basic Information</h2>
+              <h2 className="text-xl font-semibold text-black mb-4">Basic Information</h2>
 
               <div className="space-y-4">
                 <div>
@@ -280,7 +280,7 @@ export default function AddLocationForm() {
 
             {/* Address Information */}
             <div>
-              <h2 className="text-xl font-bold text-black mb-4">Address</h2>
+              <h2 className="text-xl font-semibold text-black mb-4">Address</h2>
 
               <div className="space-y-4">
                 <div>
@@ -337,7 +337,7 @@ export default function AddLocationForm() {
 
             {/* Property Details */}
             <div>
-              <h2 className="text-xl font-bold text-black mb-4">Property Details</h2>
+              <h2 className="text-xl font-semibold text-black mb-4">Property Details</h2>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
@@ -386,7 +386,7 @@ export default function AddLocationForm() {
 
             {/* Amenities */}
             <div>
-              <h2 className="text-xl font-bold text-black mb-4">Amenities</h2>
+              <h2 className="text-xl font-semibold text-black mb-4">Amenities</h2>
 
               <div className="flex gap-2 mb-4">
                 <input
@@ -427,7 +427,7 @@ export default function AddLocationForm() {
 
             {/* Contact Information */}
             <div>
-              <h2 className="text-xl font-bold text-black mb-4">Contact Information</h2>
+              <h2 className="text-xl font-semibold text-black mb-4">Contact Information</h2>
 
               <div className="space-y-4">
                 <div>
@@ -481,7 +481,7 @@ export default function AddLocationForm() {
 
             {/* Images */}
             <div>
-              <h2 className="text-xl font-bold text-black mb-4">Images</h2>
+              <h2 className="text-xl font-semibold text-black mb-4">Images</h2>
 
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">

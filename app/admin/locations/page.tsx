@@ -39,7 +39,7 @@ export default async function AdminLocationsPage() {
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-4xl font-bold text-black">Manage Locations</h1>
+            <h1 className="text-4xl font-semibold text-black">Manage Locations</h1>
             <p className="text-gray-600 mt-2">
               {locations?.length || 0} total locations
             </p>

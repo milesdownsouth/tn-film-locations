@@ -84,7 +84,7 @@ export default function DownloadPullSheetPage() {
           {status === 'loading' && (
             <>
               <div className="inline-block animate-spin rounded-full h-16 w-16 border-b-2 border-[#C41E3A] mb-4"></div>
-              <h1 className="text-3xl font-bold text-black mb-2">Preparing Download</h1>
+              <h1 className="text-3xl font-semibold text-black mb-2">Preparing Download</h1>
               <p className="text-gray-600">Loading pull sheet data...</p>
             </>
           )}
@@ -92,7 +92,7 @@ export default function DownloadPullSheetPage() {
           {status === 'downloading' && (
             <>
               <div className="inline-block animate-spin rounded-full h-16 w-16 border-b-2 border-[#C41E3A] mb-4"></div>
-              <h1 className="text-3xl font-bold text-black mb-2">Generating PDF</h1>
+              <h1 className="text-3xl font-semibold text-black mb-2">Generating PDF</h1>
               <p className="text-gray-600">Your download should start automatically...</p>
             </>
           )}
@@ -104,7 +104,7 @@ export default function DownloadPullSheetPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <h1 className="text-3xl font-bold text-black mb-2">Download Complete</h1>
+              <h1 className="text-3xl font-semibold text-black mb-2">Download Complete</h1>
               <p className="text-gray-600 mb-8">
                 Your pull sheet PDF has been downloaded successfully!
               </p>
@@ -132,7 +132,7 @@ export default function DownloadPullSheetPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </div>
-              <h1 className="text-3xl font-bold text-black mb-2">Download Failed</h1>
+              <h1 className="text-3xl font-semibold text-black mb-2">Download Failed</h1>
               <p className="text-red-600 font-medium mb-8">{error}</p>
               <div className="space-y-3">
                 <button

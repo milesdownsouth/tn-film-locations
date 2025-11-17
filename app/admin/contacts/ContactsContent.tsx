@@ -100,7 +100,7 @@ export default function ContactsContent() {
   return (
     <div className="min-h-screen bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h1 className="text-4xl font-bold text-black mb-8">Contact Submissions</h1>
+        <h1 className="text-4xl font-semibold text-black mb-8">Contact Submissions</h1>
 
         {/* Filter Tabs */}
         <div className="flex gap-2 mb-6 border-b border-gray-200">
@@ -140,7 +140,7 @@ export default function ContactsContent() {
               >
                 <div className="flex justify-between items-start mb-4">
                   <div>
-                    <h3 className="text-xl font-bold text-black">{submission.name}</h3>
+                    <h3 className="text-xl font-semibold text-black">{submission.name}</h3>
                     <p className="text-gray-600">{submission.company}</p>
                   </div>
                   <span className={`px-3 py-1 rounded-full text-sm font-medium capitalize ${getStatusColor(submission.status)}`}>
@@ -170,7 +170,7 @@ export default function ContactsContent() {
             <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
               <div className="p-6">
                 <div className="flex justify-between items-start mb-6">
-                  <h2 className="text-2xl font-bold text-black">{selectedSubmission.name}</h2>
+                  <h2 className="text-2xl font-semibold text-black">{selectedSubmission.name}</h2>
                   <button
                     onClick={() => setSelectedSubmission(null)}
                     className="text-gray-500 hover:text-gray-700"

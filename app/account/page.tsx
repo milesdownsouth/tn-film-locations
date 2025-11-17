@@ -35,7 +35,7 @@ export default async function AccountPage() {
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="flex justify-between items-start mb-8">
         <div>
-          <h1 className="text-4xl font-bold mb-2">My Account</h1>
+          <h1 className="text-4xl font-semibold mb-2">My Account</h1>
           <p className="text-gray-600">{authCheck.user.email}</p>
           {authCheck.isAdmin && (
             <span className="inline-block mt-2 px-3 py-1 bg-[#C41E3A] text-white text-sm font-bold rounded">
@@ -64,7 +64,7 @@ export default async function AccountPage() {
           href="/account/saved"
           className="block bg-white border-2 border-black p-6 hover:bg-gray-50 transition-colors"
         >
-          <h2 className="text-xl font-bold mb-2">Saved Locations</h2>
+          <h2 className="text-xl font-semibold mb-2">Saved Locations</h2>
           <p className="text-gray-600 text-sm">
             View and manage your saved film locations
           </p>
@@ -74,7 +74,7 @@ export default async function AccountPage() {
           href="/account/pull-sheets"
           className="block bg-white border-2 border-black p-6 hover:bg-gray-50 transition-colors"
         >
-          <h2 className="text-xl font-bold mb-2">Pull Sheets</h2>
+          <h2 className="text-xl font-semibold mb-2">Pull Sheets</h2>
           <p className="text-gray-600 text-sm">
             Create and manage location collections
           </p>
@@ -84,7 +84,7 @@ export default async function AccountPage() {
           href="/search"
           className="block bg-white border-2 border-black p-6 hover:bg-gray-50 transition-colors"
         >
-          <h2 className="text-xl font-bold mb-2">Browse Locations</h2>
+          <h2 className="text-xl font-semibold mb-2">Browse Locations</h2>
           <p className="text-gray-600 text-sm">
             Discover new filming locations
           </p>
@@ -96,7 +96,7 @@ export default async function AccountPage() {
               href="/admin"
               className="block bg-[#C41E3A] text-white border-2 border-black p-6 hover:bg-[#a01729] transition-colors"
             >
-              <h2 className="text-xl font-bold mb-2">Admin Dashboard</h2>
+              <h2 className="text-xl font-semibold mb-2">Admin Dashboard</h2>
               <p className="text-white text-sm opacity-90">
                 Manage locations and users
               </p>
@@ -106,7 +106,7 @@ export default async function AccountPage() {
               href="/admin/locations"
               className="block bg-[#C41E3A] text-white border-2 border-black p-6 hover:bg-[#a01729] transition-colors"
             >
-              <h2 className="text-xl font-bold mb-2">Manage Locations</h2>
+              <h2 className="text-xl font-semibold mb-2">Manage Locations</h2>
               <p className="text-white text-sm opacity-90">
                 Add, edit, and delete locations
               </p>

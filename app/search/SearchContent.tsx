@@ -213,7 +213,7 @@ export default function SearchContent() {
     <div className="bg-white min-h-screen py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <h1 ref={headerRef} className="text-5xl font-bold text-black text-center mb-12">
+        <h1 ref={headerRef} className="text-5xl font-semibold text-black text-center mb-12">
           LOCATION SEARCH
         </h1>
 
@@ -311,7 +311,7 @@ export default function SearchContent() {
         {/* Amenities Dropdown */}
         {showAmenitiesFilter && availableAmenities.length > 0 && (
           <div className="mb-8 bg-gray-50 rounded-lg p-6 border border-gray-200">
-            <h3 className="text-lg font-bold text-black mb-4">Filter by Amenities</h3>
+            <h3 className="text-lg font-semibold text-black mb-4">Filter by Amenities</h3>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
               {availableAmenities.map((amenity) => (
                 <label
@@ -408,7 +408,7 @@ export default function SearchContent() {
                       </div>
                       <div className="p-4">
                         <p className="text-gray-600 text-sm">{location.city}</p>
-                        <h3 className="text-lg font-bold text-black">{location.name}</h3>
+                        <h3 className="text-lg font-semibold text-black">{location.name}</h3>
                         <p className="text-gray-500 text-sm mt-1 capitalize">
                           {location.property_type}
                         </p>

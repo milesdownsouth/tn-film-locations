@@ -511,7 +511,7 @@ export default function LocationDetailPage({ params }: { params: Promise<{ id: s
       >
         <div ref={heroRef} className="absolute inset-0 flex flex-col justify-end px-8 pb-12">
           <p className="text-white text-lg mb-2">{location.city}, {location.county}</p>
-          <h1 className="text-5xl md:text-6xl font-bold text-white uppercase">{location.name}</h1>
+          <h1 className="text-5xl md:text-6xl font-semibold text-white uppercase">{location.name}</h1>
         </div>
 
         {/* Save Button - Top Right */}
@@ -553,7 +553,7 @@ export default function LocationDetailPage({ params }: { params: Promise<{ id: s
       {location.description && (
         <section ref={descriptionRef} className="bg-white py-8 border-b border-gray-200">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-2xl font-bold text-black mb-4">DESCRIPTION</h2>
+            <h2 className="text-2xl font-semibold text-black mb-4">DESCRIPTION</h2>
             <p className="text-gray-700 leading-relaxed">{location.description}</p>
           </div>
         </section>
@@ -563,7 +563,7 @@ export default function LocationDetailPage({ params }: { params: Promise<{ id: s
       {location.amenities && location.amenities.length > 0 && (
         <section ref={amenitiesRef} className="bg-white py-8 border-b border-gray-200">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-2xl font-bold text-black mb-4">AMENITIES</h2>
+            <h2 className="text-2xl font-semibold text-black mb-4">AMENITIES</h2>
             <div className="flex flex-wrap gap-2">
               {location.amenities.map((amenity, index) => (
                 <span
@@ -635,7 +635,7 @@ export default function LocationDetailPage({ params }: { params: Promise<{ id: s
       {location.images && location.images.length > 0 && (
         <section ref={galleryRef} className="bg-white py-12">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-2xl font-bold text-black mb-6" style={{ opacity: 0 }}>PHOTO GALLERY</h2>
+            <h2 className="text-2xl font-semibold text-black mb-6" style={{ opacity: 0 }}>PHOTO GALLERY</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {location.images.map((image, index) => (
                 <div
@@ -660,7 +660,7 @@ export default function LocationDetailPage({ params }: { params: Promise<{ id: s
       {relatedLocations.length > 0 && (
         <section ref={relatedRef} className="bg-white py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-4xl font-bold text-center text-black mb-12">
+            <h2 className="text-4xl font-semibold text-center text-black mb-12">
               RELATED LOCATIONS
             </h2>
 
@@ -776,7 +776,7 @@ export default function LocationDetailPage({ params }: { params: Promise<{ id: s
           >
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-black">Add to Pull Sheet</h2>
+                <h2 className="text-2xl font-semibold text-black">Add to Pull Sheet</h2>
                 <button
                   onClick={() => setShowPullSheetModal(false)}
                   className="text-gray-500 hover:text-gray-700"

@@ -118,7 +118,7 @@ export default function AboutPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* Left Side - Text */}
             <div ref={heroTextRef}>
-              <h1 className="text-4xl md:text-5xl font-bold mb-8">
+              <h1 className="text-4xl md:text-5xl font-semibold mb-8">
                 WE HELP YOU FIND THE<br />RIGHT FILM LOCATION
               </h1>
               <p className="text-gray-300 mb-8">
@@ -161,7 +161,7 @@ export default function AboutPage() {
       {/* The Numbers Section - White Background */}
       <section className="bg-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-4xl font-bold text-black mb-16">THE NUMBERS</h2>
+          <h2 className="text-4xl font-semibold text-black mb-16">THE NUMBERS</h2>
 
           <div ref={numbersRef} className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {/* Stat 1 */}
@@ -200,7 +200,7 @@ export default function AboutPage() {
 
             {/* Right Side - Bio */}
             <div ref={fredSectionRef}>
-              <h2 className="text-4xl font-bold mb-2">FRED JOVE</h2>
+              <h2 className="text-4xl font-semibold mb-2">FRED JOVE</h2>
               <p className="text-sm mb-6 opacity-90">Founder & Location Scout</p>
               <p className="text-white mb-4">
                 With over 30 years in the film and location scouting industry, Fred founded TN Film Locations to solve a problem he saw repeatedly: talented production teams spending valuable time and resources searching for the right venue.

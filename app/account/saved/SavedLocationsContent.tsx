@@ -67,7 +67,7 @@ export default function SavedLocationsContent() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-5xl font-bold text-black text-center mb-4">
+          <h1 className="text-5xl font-semibold text-black text-center mb-4">
             SAVED LOCATIONS
           </h1>
           <p className="text-center text-gray-600">
@@ -130,7 +130,7 @@ export default function SavedLocationsContent() {
                     <div className="p-4">
                       <Link href={`/locations/${location.id}`}>
                         <p className="text-gray-600 text-sm">{location.city}</p>
-                        <h3 className="text-lg font-bold text-black hover:text-[#C41E3A]">{location.name}</h3>
+                        <h3 className="text-lg font-semibold text-black hover:text-[#C41E3A]">{location.name}</h3>
                         <p className="text-gray-500 text-sm mt-1 capitalize">
                           {location.property_type}
                         </p>
@@ -150,7 +150,7 @@ export default function SavedLocationsContent() {
             {/* Pull Sheets Link */}
             {locations.length > 0 && (
               <div className="text-center py-8 border-t border-gray-200">
-                <h2 className="text-2xl font-bold text-black mb-4">Create a Pull Sheet</h2>
+                <h2 className="text-2xl font-semibold text-black mb-4">Create a Pull Sheet</h2>
                 <p className="text-gray-600 mb-6">
                   Organize your saved locations into pull sheets that you can share and download.
                 </p>

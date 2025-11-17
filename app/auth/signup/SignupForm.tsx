@@ -60,7 +60,7 @@ export default function SignupForm() {
     <div className="min-h-screen bg-white flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div>
-          <h1 className="text-4xl font-bold text-center text-black">Create Account</h1>
+          <h1 className="text-4xl font-semibold text-center text-black">Create Account</h1>
           <p className="mt-2 text-center text-gray-600">
             Sign up to save locations and create pull sheets
           </p>

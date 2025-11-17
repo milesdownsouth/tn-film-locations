@@ -86,7 +86,7 @@ export default function PullSheetsContent() {
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-5xl font-bold text-black">MY PULL SHEETS</h1>
+            <h1 className="text-5xl font-semibold text-black">MY PULL SHEETS</h1>
             <p className="text-gray-600 mt-2">
               {pullSheets.length} pull sheet{pullSheets.length !== 1 ? 's' : ''}
             </p>
@@ -140,7 +140,7 @@ export default function PullSheetsContent() {
                 {pullSheets.map((sheet) => (
                   <div key={sheet.id} className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow p-6">
                     <div className="flex justify-between items-start mb-4">
-                      <h3 className="text-xl font-bold text-black">{sheet.name}</h3>
+                      <h3 className="text-xl font-semibold text-black">{sheet.name}</h3>
                       <span className={`px-2 py-1 text-xs rounded-full ${
                         sheet.is_public
                           ? 'bg-green-100 text-green-800'

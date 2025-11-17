@@ -148,7 +148,7 @@ export default function EditPullSheetForm({ pullSheetId }: EditPullSheetFormProp
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-5xl font-bold text-black mb-2">EDIT PULL SHEET</h1>
+          <h1 className="text-5xl font-semibold text-black mb-2">EDIT PULL SHEET</h1>
           <p className="text-gray-600">
             Update details and manage locations in your pull sheet
           </p>
@@ -180,7 +180,7 @@ export default function EditPullSheetForm({ pullSheetId }: EditPullSheetFormProp
           <form onSubmit={handleSubmit}>
             {/* Pull Sheet Details */}
             <div className="bg-gray-50 rounded-lg p-6 mb-8">
-              <h2 className="text-2xl font-bold text-black mb-4">Details</h2>
+              <h2 className="text-2xl font-semibold text-black mb-4">Details</h2>
 
               <div className="space-y-4">
                 {/* Name */}
@@ -255,7 +255,7 @@ export default function EditPullSheetForm({ pullSheetId }: EditPullSheetFormProp
             {/* Location Selection */}
             <div className="mb-8">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-2xl font-bold text-black">
+                <h2 className="text-2xl font-semibold text-black">
                   Locations ({selectedLocationIds.length} selected)
                 </h2>
                 <div className="space-x-2">
@@ -318,7 +318,7 @@ export default function EditPullSheetForm({ pullSheetId }: EditPullSheetFormProp
                       </div>
                       <div className="p-3">
                         <p className="text-xs text-gray-500">{location.city}</p>
-                        <h3 className="text-sm font-bold text-black line-clamp-1">
+                        <h3 className="text-sm font-semibold text-black line-clamp-1">
                           {location.name}
                         </h3>
                         <p className="text-xs text-gray-500 capitalize mt-1">
