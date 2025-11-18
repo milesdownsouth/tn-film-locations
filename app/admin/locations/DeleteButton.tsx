@@ -11,9 +11,10 @@ import { useRouter } from 'next/navigation';
 interface DeleteButtonProps {
   locationId: string;
   locationName: string;
+  variant?: 'link' | 'button';
 }
 
-export default function DeleteButton({ locationId, locationName }: DeleteButtonProps) {
+export default function DeleteButton({ locationId, locationName, variant = 'link' }: DeleteButtonProps) {
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -42,11 +43,16 @@ export default function DeleteButton({ locationId, locationName }: DeleteButtonP
     }
   };
 
+  const baseClasses = "disabled:opacity-50 disabled:cursor-not-allowed";
+  const variantClasses = variant === 'button'
+    ? "w-full bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors text-sm font-bold uppercase"
+    : "text-red-600 hover:text-red-900";
+
   return (
     <button
       onClick={handleDelete}
       disabled={isDeleting}
-      className="text-red-600 hover:text-red-900 disabled:opacity-50 disabled:cursor-not-allowed"
+      className={`${baseClasses} ${variantClasses}`}
     >
       {isDeleting ? 'Deleting...' : 'Delete'}
     </button>

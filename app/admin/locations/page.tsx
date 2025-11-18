@@ -52,8 +52,8 @@ export default async function AdminLocationsPage() {
           </Link>
         </div>
 
-        {/* Locations Table */}
-        <div className="bg-white rounded-lg shadow overflow-hidden">
+        {/* Desktop Table View - Hidden on Mobile */}
+        <div className="hidden md:block bg-white rounded-lg shadow overflow-hidden">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
@@ -151,6 +151,82 @@ export default async function AdminLocationsPage() {
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile Card View */}
+        <div className="md:hidden space-y-4">
+          {locations && locations.length > 0 ? (
+            locations.map((location) => (
+              <div key={location.id} className="bg-white rounded-lg shadow p-4">
+                <div className="flex gap-4">
+                  {/* Image */}
+                  <div className="h-20 w-20 flex-shrink-0 rounded overflow-hidden bg-gray-200">
+                    {location.images && location.images.length > 0 ? (
+                      <img
+                        src={location.images[0]}
+                        alt={location.name}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex items-center justify-center h-full text-gray-400 text-xs">
+                        No Image
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Info */}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-sm font-bold text-gray-900 truncate">
+                      {location.name}
+                    </h3>
+                    <p className="text-sm text-gray-500">
+                      {location.city}, {location.county} County
+                    </p>
+                    <div className="mt-2 flex gap-2 items-center flex-wrap">
+                      <span className="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 capitalize">
+                        {location.property_type}
+                      </span>
+                      <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                        location.is_active
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-red-100 text-red-800'
+                      }`}>
+                        {location.is_active ? 'Active' : 'Inactive'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="mt-4 flex gap-2">
+                  <Link
+                    href={`/locations/${location.id}`}
+                    className="flex-1 text-center bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors text-sm font-bold uppercase"
+                    target="_blank"
+                  >
+                    View
+                  </Link>
+                  <Link
+                    href={`/admin/locations/${location.id}/edit`}
+                    className="flex-1 text-center bg-[#C41E3A] text-white px-4 py-2 rounded hover:bg-[#a01729] transition-colors text-sm font-bold uppercase"
+                  >
+                    Edit
+                  </Link>
+                  <div className="flex-1">
+                    <DeleteButton
+                      locationId={location.id}
+                      locationName={location.name}
+                      variant="button"
+                    />
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="bg-white rounded-lg shadow p-8 text-center text-gray-500">
+              No locations found. Add your first location to get started.
+            </div>
+          )}
         </div>
 
         {/* Back to Admin Home */}
