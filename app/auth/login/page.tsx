@@ -1,12 +1,19 @@
 /**
- * Login Page - To be implemented
+ * Login Page
+ * User authentication with Supabase Auth
  */
 
-export default function LoginPage() {
-  return (
-    <div className="max-w-md mx-auto px-4 py-16">
-      <h1 className="text-3xl font-bold mb-6 text-center">Sign In</h1>
-      <p className="text-gray-600 text-center">Login functionality coming soon...</p>
-    </div>
-  );
+import { redirect } from 'next/navigation';
+import { checkAuth } from '@/lib/auth-middleware';
+import LoginForm from './LoginForm';
+
+export default async function LoginPage() {
+  const authCheck = await checkAuth();
+
+  // If already logged in, redirect to account page
+  if (authCheck.user) {
+    redirect('/account');
+  }
+
+  return <LoginForm />;
 }

@@ -1,0 +1,470 @@
+/**
+ * Home Content - Client Component
+ * Handles search functionality and displays featured locations
+ */
+
+'use client';
+
+import { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import type { Location } from '@/types/database';
+
+// Register GSAP plugins
+if (typeof window !== 'undefined') {
+  gsap.registerPlugin(ScrollTrigger);
+}
+
+interface HomeContentProps {
+  featuredLocations: Location[];
+}
+
+export default function HomeContent({ featuredLocations }: HomeContentProps) {
+  const [searchQuery, setSearchQuery] = useState('');
+  const router = useRouter();
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const fadeOverlayRef = useRef<HTMLDivElement>(null);
+  const heroTitleRef = useRef<HTMLHeadingElement>(null);
+  const heroSearchRef = useRef<HTMLFormElement>(null);
+  const whoIsItForRef = useRef<HTMLDivElement>(null);
+  const featuredRef = useRef<HTMLDivElement>(null);
+  const howItWorksRef = useRef<HTMLDivElement>(null);
+
+  // Ensure video plays on mount and handle fade effect on loop
+  useEffect(() => {
+    const video = videoRef.current;
+    const fadeOverlay = fadeOverlayRef.current;
+    if (!video || !fadeOverlay) return;
+
+    // Start playing the video
+    video.play().catch((error) => {
+      console.log('Video autoplay failed:', error);
+    });
+
+    // Handle fade effect near end of video using a black overlay
+    const handleTimeUpdate = () => {
+      if (!video || !fadeOverlay) return;
+
+      const timeLeft = video.duration - video.currentTime;
+
+      // Fade in black overlay in the last 1 second
+      if (timeLeft <= 1 && timeLeft > 0) {
+        const opacity = 1 - (timeLeft / 1); // 0 to 1
+        fadeOverlay.style.opacity = (opacity * 0.3).toString(); // Max 30% opacity
+      }
+      // Fade out black overlay at the start
+      else if (video.currentTime < 1) {
+        const opacity = 1 - (video.currentTime / 1); // 1 to 0
+        fadeOverlay.style.opacity = (opacity * 0.3).toString(); // Max 30% opacity
+      }
+      // No extra fade in the middle
+      else {
+        fadeOverlay.style.opacity = '0';
+      }
+    };
+
+    video.addEventListener('timeupdate', handleTimeUpdate);
+
+    return () => {
+      video.removeEventListener('timeupdate', handleTimeUpdate);
+    };
+  }, []);
+
+  // Hero animations
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      // Animate hero title - fade in and slide up
+      gsap.from(heroTitleRef.current, {
+        opacity: 0,
+        y: 50,
+        duration: 1.2,
+        ease: 'power3.out',
+        delay: 0.3,
+      });
+
+      // Animate search bar - fade in
+      gsap.from(heroSearchRef.current, {
+        opacity: 0,
+        y: 30,
+        duration: 1,
+        ease: 'power3.out',
+        delay: 0.6,
+      });
+    });
+
+    return () => ctx.revert();
+  }, []);
+
+  // Who Is It For section animations
+  useEffect(() => {
+    if (!whoIsItForRef.current) return;
+
+    const ctx = gsap.context(() => {
+      const cards = whoIsItForRef.current!.querySelectorAll('.feature-card');
+
+      gsap.from(cards, {
+        opacity: 0,
+        y: 60,
+        duration: 0.8,
+        stagger: 0.15,
+        ease: 'power3.out',
+        scrollTrigger: {
+          trigger: whoIsItForRef.current,
+          start: 'top 80%',
+          toggleActions: 'play none none none',
+        },
+      });
+    });
+
+    return () => ctx.revert();
+  }, []);
+
+  // Featured locations animations
+  useEffect(() => {
+    if (!featuredRef.current || featuredLocations.length === 0) return;
+
+    const ctx = gsap.context(() => {
+      const locationCards = featuredRef.current!.querySelectorAll('.location-card');
+
+      gsap.from(locationCards, {
+        opacity: 0,
+        y: 40,
+        scale: 0.95,
+        duration: 0.6,
+        stagger: 0.1,
+        ease: 'power2.out',
+        scrollTrigger: {
+          trigger: featuredRef.current,
+          start: 'top 85%',
+          toggleActions: 'play none none none',
+        },
+      });
+    });
+
+    return () => ctx.revert();
+  }, [featuredLocations]);
+
+  // How It Works animations
+  useEffect(() => {
+    if (!howItWorksRef.current) return;
+
+    const ctx = gsap.context(() => {
+      const steps = howItWorksRef.current!.querySelectorAll('.step-card');
+
+      gsap.from(steps, {
+        opacity: 0,
+        y: 50,
+        duration: 0.7,
+        stagger: 0.2,
+        ease: 'power3.out',
+        scrollTrigger: {
+          trigger: howItWorksRef.current,
+          start: 'top 80%',
+          toggleActions: 'play none none none',
+        },
+      });
+
+      // Animate the step numbers with a scale effect
+      const numbers = howItWorksRef.current!.querySelectorAll('.step-number');
+      gsap.from(numbers, {
+        scale: 0,
+        rotation: -180,
+        duration: 0.8,
+        stagger: 0.2,
+        ease: 'back.out(1.7)',
+        scrollTrigger: {
+          trigger: howItWorksRef.current,
+          start: 'top 80%',
+          toggleActions: 'play none none none',
+        },
+      });
+    });
+
+    return () => ctx.revert();
+  }, []);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
+    } else {
+      router.push('/search');
+    }
+  };
+
+  return (
+    <div>
+      {/* Hero Section with Video Background */}
+      <section style={{ position: 'relative', height: '500px', overflow: 'hidden', zIndex: 0 }}>
+        {/* Video Background */}
+        <video
+          ref={videoRef}
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="auto"
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            zIndex: 1,
+            pointerEvents: 'none',
+          }}
+        >
+          <source src="/hero-video.mp4" type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+
+        {/* Fade Overlay - Creates smooth loop transition */}
+        <div
+          ref={fadeOverlayRef}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(0, 0, 0, 1)',
+            opacity: 0,
+            zIndex: 1.5,
+            pointerEvents: 'none',
+            transition: 'opacity 0.3s ease-in-out',
+          }}
+        ></div>
+
+        {/* Dark Overlay for Text Readability */}
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            zIndex: 2,
+          }}
+        ></div>
+
+        {/* Content */}
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            zIndex: 3,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '0 1rem',
+          }}
+        >
+          <h1 ref={heroTitleRef} className="text-4xl md:text-5xl lg:text-6xl font-semibold text-white text-center mb-8">
+            VENUE AND FILM LOCATIONS IN TENNESSEE
+          </h1>
+
+          {/* Search Bar */}
+          <form ref={heroSearchRef} onSubmit={handleSearch} className="w-full max-w-3xl flex gap-4">
+            <input
+              type="text"
+              placeholder="Search by location type, city, or features..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="flex-1 px-6 py-4 rounded text-lg bg-white text-black focus:outline-none placeholder:text-gray-500"
+            />
+            <button
+              type="submit"
+              className="bg-[#C41E3A] text-white px-8 py-4 rounded hover:bg-[#a01729] transition-colors font-bold uppercase"
+            >
+              SEARCH
+            </button>
+          </form>
+        </div>
+      </section>
+
+      {/* Who Is It For Section - Black Background */}
+      <section className="bg-black text-white py-20">
+        <div ref={whoIsItForRef} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <p className="text-[#C41E3A] mb-4 uppercase text-sm font-medium">Who Is It For</p>
+          <h2 className="text-3xl md:text-4xl font-semibold mb-16">
+            TAILORED LOCATIONS FOR<br />EVERY TYPE OF NEED.
+          </h2>
+
+          {/* 2-Column Layout */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+            {/* Left Column */}
+            <div className="space-y-12">
+              {/* Film & TV Productions */}
+              <div className="feature-card">
+                <div className="w-16 h-16 rounded-full border-2 border-white flex items-center justify-center mb-4">
+                  <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold mb-3">FILM & TV PRODUCTIONS</h3>
+                <p className="text-sm text-gray-400">Find your perfect scene</p>
+                <p className="text-sm text-gray-300 mt-4">
+                  From urban streetscapes to rolling countryside, discover locations that bring your script to life. Our curated database includes detailed amenities, permitting information, and high-resolution photos to streamline your location scouting process.
+                </p>
+              </div>
+
+              {/* Event Professionals */}
+              <div className="feature-card">
+                <div className="w-16 h-16 rounded-full border-2 border-white flex items-center justify-center mb-4">
+                  <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold mb-3">EVENT PROFESSIONALS</h3>
+                <p className="text-sm text-gray-400">Memorable spaces for every occasion</p>
+                <p className="text-sm text-gray-300 mt-4">
+                  Whether you're planning a corporate event, wedding, or special production, explore Tennessee's most distinctive venues. Filter by capacity, style, and amenities to find spaces that exceed your client's expectations.
+                </p>
+              </div>
+            </div>
+
+            {/* Right Column */}
+            <div className="space-y-12">
+              {/* Commercial & Photo Shoots */}
+              <div className="feature-card">
+                <div className="w-16 h-16 rounded-full border-2 border-white flex items-center justify-center mb-4">
+                  <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold mb-3">COMMERCIAL & PHOTO SHOOTS</h3>
+                <p className="text-sm text-gray-400">Stunning backdrops for any vision</p>
+                <p className="text-sm text-gray-300 mt-4">
+                  Access unique Tennessee venues perfect for commercials, product photography, and brand content. Each location includes comprehensive details about access, lighting conditions, and available facilities to ensure your shoot runs smoothly.
+                </p>
+              </div>
+
+              {/* Red CTA Box */}
+              <div className="feature-card bg-[#C41E3A] p-8 rounded-lg">
+                <h3 className="text-2xl font-semibold mb-4">
+                  NOT SURE HOW TO GET STARTED?
+                </h3>
+                <p className="text-sm mb-6">
+                  Our team is here to help you find the perfect location for your project. Get personalized recommendations based on your specific needs, budget, and timeline.
+                </p>
+                <Link href="/contact">
+                  <button className="bg-black text-white px-6 py-3 rounded hover:bg-gray-800 transition-colors font-bold uppercase">
+                    CONTACT US
+                  </button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Featured Locations - White Background */}
+      <section className="bg-white py-20">
+        <div ref={featuredRef} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-4xl font-semibold text-center text-black mb-12">
+            FEATURED LOCATIONS
+          </h2>
+
+          {featuredLocations.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {featuredLocations.map((location) => (
+                <Link key={location.id} href={`/locations/${location.id}`}>
+                  <div className="location-card bg-white rounded-lg shadow hover:shadow-lg transition-shadow cursor-pointer">
+                    <div className="relative h-64 rounded-t-lg overflow-hidden bg-gray-200">
+                      {location.images && location.images.length > 0 ? (
+                        <img
+                          src={location.images[0]}
+                          alt={location.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex items-center justify-center h-full text-gray-400">
+                          No Image
+                        </div>
+                      )}
+                    </div>
+                    <div className="p-4">
+                      <p className="text-gray-600 text-sm">{location.city}, {location.county}</p>
+                      <h3 className="text-lg font-bold text-black">{location.name}</h3>
+                      <p className="text-gray-500 text-sm mt-1 capitalize">
+                        {location.property_type}
+                      </p>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center text-gray-500">
+              <p>No featured locations yet. Check back soon!</p>
+              <Link href="/search" className="text-[#C41E3A] hover:underline mt-2 inline-block">
+                Browse all locations →
+              </Link>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* How It Works - Red Background */}
+      <section className="bg-[#C41E3A] text-white py-20">
+        <div ref={howItWorksRef} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-4xl font-semibold text-center mb-16">
+            HOW IT WORKS
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
+            {/* Step 1 */}
+            <div className="step-card text-center">
+              <div className="step-number w-20 h-20 rounded-full border-4 border-white flex items-center justify-center mx-auto mb-6">
+                <span className="text-3xl font-bold">1</span>
+              </div>
+              <h3 className="text-2xl font-semibold mb-4">SEARCH</h3>
+              <p className="text-sm">
+                Browse our collection of film friendly locations across Tennessee.
+              </p>
+            </div>
+
+            {/* Step 2 */}
+            <div className="step-card text-center">
+              <div className="step-number w-20 h-20 rounded-full border-4 border-white flex items-center justify-center mx-auto mb-6">
+                <span className="text-3xl font-bold">2</span>
+              </div>
+              <h3 className="text-2xl font-semibold mb-4">SELECT</h3>
+              <p className="text-sm">
+                Create a pull file of the locations that match your creative vision
+              </p>
+            </div>
+
+            {/* Step 3 */}
+            <div className="step-card text-center">
+              <div className="step-number w-20 h-20 rounded-full border-4 border-white flex items-center justify-center mx-auto mb-6">
+                <span className="text-3xl font-bold">3</span>
+              </div>
+              <h3 className="text-2xl font-semibold mb-4">BOOK</h3>
+              <p className="text-sm">
+                Contact us to reserve your location and make the needed arrangements
+              </p>
+            </div>
+          </div>
+
+          <div className="text-center">
+            <Link href="/search">
+              <button className="bg-black text-white px-8 py-3 rounded hover:bg-gray-800 transition-colors font-bold uppercase">
+                GET STARTED
+              </button>
+            </Link>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
