@@ -17,7 +17,7 @@ export function Footer({ isLoggedIn = false }: FooterProps) {
         {/* Logo Centered */}
         <div className="flex justify-center mb-8">
           <Image
-            src="/TN-Film-Locations_white.png"
+            src="/tfl-logo-white2.png"
             alt="TN Film Locations"
             width={200}
             height={48}
