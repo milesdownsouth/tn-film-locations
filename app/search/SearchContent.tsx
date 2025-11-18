@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Location } from '@/types/database';
 import { PROPERTY_TYPES, TN_COUNTIES } from '@/types/database';
+import LottieLoader from '@/components/LottieLoader';
 
 interface LocationsResponse {
   locations: Location[];
@@ -216,8 +217,7 @@ export default function SearchContent() {
         {/* Loading State */}
         {loading && (
           <div className="text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#C41E3A]"></div>
-            <p className="mt-4 text-gray-600">Loading locations...</p>
+            <LottieLoader message="Loading locations..." size={150} />
           </div>
         )}
 
