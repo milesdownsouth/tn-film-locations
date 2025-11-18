@@ -33,9 +33,6 @@ export function Footer({ isLoggedIn = false }: FooterProps) {
           <Link href="/about" className="text-white hover:text-[#C41E3A] transition-colors font-medium uppercase text-sm">
             ABOUT
           </Link>
-          <Link href="/services" className="text-white hover:text-[#C41E3A] transition-colors font-medium uppercase text-sm">
-            SERVICES
-          </Link>
           <Link href="/search" className="text-white hover:text-[#C41E3A] transition-colors font-medium uppercase text-sm">
             LOCATION SEARCH
           </Link>
