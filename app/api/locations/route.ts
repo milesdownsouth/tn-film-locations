@@ -29,8 +29,9 @@ export async function GET(request: NextRequest) {
       .eq('is_active', true);
 
     // Apply search filter (search across name, description, address, city, county, property_type, and amenities)
+    // For amenities, convert array to text for case-insensitive partial matching
     if (searchQuery) {
-      query = query.or(`name.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%,address.ilike.%${searchQuery}%,city.ilike.%${searchQuery}%,county.ilike.%${searchQuery}%,property_type.ilike.%${searchQuery}%,amenities.cs.{${searchQuery}}`);
+      query = query.or(`name.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%,address.ilike.%${searchQuery}%,city.ilike.%${searchQuery}%,county.ilike.%${searchQuery}%,property_type.ilike.%${searchQuery}%,amenities::text.ilike.%${searchQuery}%`);
     }
 
     // Apply filters
