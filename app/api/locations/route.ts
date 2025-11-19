@@ -28,12 +28,6 @@ export async function GET(request: NextRequest) {
       .select('*', { count: 'exact' })
       .eq('is_active', true);
 
-    // Apply search filter (search across name, description, address, city, county, property_type, and amenities)
-    // For amenities, convert array to text for case-insensitive partial matching
-    if (searchQuery) {
-      query = query.or(`name.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%,address.ilike.%${searchQuery}%,city.ilike.%${searchQuery}%,county.ilike.%${searchQuery}%,property_type.ilike.%${searchQuery}%,amenities::text.ilike.%${searchQuery}%`);
-    }
-
     // Apply filters
     if (city) {
       query = query.eq('city', city);
@@ -55,11 +49,18 @@ export async function GET(request: NextRequest) {
     // Apply sorting
     query = query.order(sortBy, { ascending: sortOrder === 'asc' });
 
-    // Apply pagination
-    query = query.range(offset, offset + limit - 1);
+    // If there's a search query, fetch more results for client-side filtering
+    // Otherwise use normal pagination
+    if (searchQuery) {
+      // Fetch more results to filter client-side (including amenities search)
+      query = query.range(0, 999);
+    } else {
+      // Normal pagination
+      query = query.range(offset, offset + limit - 1);
+    }
 
     // Execute query
-    const { data: locations, error, count } = await query;
+    const { data: allLocations, error } = await query;
 
     if (error) {
       console.error('Database error:', error);
@@ -69,15 +70,49 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    let locations = allLocations || [];
+
+    // If there's a search query, filter client-side across all fields including amenities
+    if (searchQuery && locations.length > 0) {
+      const searchLower = searchQuery.toLowerCase();
+      locations = locations.filter(location => {
+        // Check text fields
+        const matchesText =
+          location.name?.toLowerCase().includes(searchLower) ||
+          location.description?.toLowerCase().includes(searchLower) ||
+          location.address?.toLowerCase().includes(searchLower) ||
+          location.city?.toLowerCase().includes(searchLower) ||
+          location.county?.toLowerCase().includes(searchLower) ||
+          location.property_type?.toLowerCase().includes(searchLower);
+
+        // Check amenities array
+        const matchesAmenity = location.amenities?.some((amenity: string) =>
+          amenity.toLowerCase().includes(searchLower)
+        );
+
+        return matchesText || matchesAmenity;
+      });
+    }
+
+    // Calculate count after filtering
+    const count = locations.length;
+
+    // Apply pagination to filtered results
+    if (searchQuery) {
+      const start = offset;
+      const end = offset + limit;
+      locations = locations.slice(start, end);
+    }
+
     // Calculate pagination metadata
-    const totalPages = Math.ceil((count || 0) / limit);
+    const totalPages = Math.ceil(count / limit);
 
     return NextResponse.json({
       locations: locations || [],
       pagination: {
         page,
         limit,
-        total: count || 0,
+        total: count,
         totalPages,
         hasNext: page < totalPages,
         hasPrev: page > 1,
