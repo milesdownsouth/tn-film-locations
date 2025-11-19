@@ -28,9 +28,9 @@ export async function GET(request: NextRequest) {
       .select('*', { count: 'exact' })
       .eq('is_active', true);
 
-    // Apply search filter (search across name, description, address, city)
+    // Apply search filter (search across name, description, address, city, county, property_type, and amenities)
     if (searchQuery) {
-      query = query.or(`name.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%,address.ilike.%${searchQuery}%,city.ilike.%${searchQuery}%`);
+      query = query.or(`name.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%,address.ilike.%${searchQuery}%,city.ilike.%${searchQuery}%,county.ilike.%${searchQuery}%,property_type.ilike.%${searchQuery}%,amenities.cs.{${searchQuery}}`);
     }
 
     // Apply filters
