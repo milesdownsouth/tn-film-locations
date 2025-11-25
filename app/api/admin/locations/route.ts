@@ -6,10 +6,28 @@ import { uploadImages } from '@/lib/cloudflare-r2';
 export async function POST(request: NextRequest) {
   // Check admin authentication
   const { error: authError, user } = await requireAdmin();
-  if (authError) return authError;
+  if (authError) {
+    console.error('Admin auth check failed');
+    return authError;
+  }
+
+  console.log('Admin auth passed for user:', user?.id);
 
   try {
     const formData = await request.formData();
+
+    // Parse amenities with better error handling
+    let amenities: string[] = [];
+    try {
+      const amenitiesStr = formData.get('amenities') as string || '[]';
+      amenities = JSON.parse(amenitiesStr);
+    } catch (parseError) {
+      console.error('Error parsing amenities JSON:', parseError);
+      return NextResponse.json(
+        { error: 'Invalid amenities format', details: parseError instanceof Error ? parseError.message : 'Unknown error' },
+        { status: 400 }
+      );
+    }
 
     // Extract location data
     const locationData = {
@@ -22,7 +40,7 @@ export async function POST(request: NextRequest) {
       year_built: formData.get('year_built') ? parseInt(formData.get('year_built') as string) : null,
       square_footage: formData.get('square_footage') ? parseInt(formData.get('square_footage') as string) : null,
       parking: formData.get('parking') as string || null,
-      amenities: JSON.parse(formData.get('amenities') as string || '[]'),
+      amenities: amenities,
       contact_name: formData.get('contact_name') as string,
       contact_email: formData.get('contact_email') as string,
       contact_phone: formData.get('contact_phone') as string,

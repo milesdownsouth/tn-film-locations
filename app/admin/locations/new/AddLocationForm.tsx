@@ -156,11 +156,30 @@ export default function AddLocationForm() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to create location');
+        let errorMessage = 'Failed to create location';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+          if (errorData.details) {
+            errorMessage += ` (${errorData.details})`;
+          }
+        } catch (parseError) {
+          // If we can't parse the response as JSON, show the raw response
+          const responseText = await response.text();
+          console.error('Non-JSON error response:', responseText);
+          errorMessage = `Server error (${response.status}): Unable to parse response. Check console for details.`;
+        }
+        throw new Error(errorMessage);
       }
 
-      const { location } = await response.json();
+      let location;
+      try {
+        const responseData = await response.json();
+        location = responseData.location;
+      } catch (parseError) {
+        console.error('Error parsing success response:', parseError);
+        throw new Error('Location may have been created but response was invalid');
+      }
 
       // Redirect to location detail page
       router.push(`/admin/locations`);
