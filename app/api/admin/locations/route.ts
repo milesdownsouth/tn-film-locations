@@ -3,6 +3,10 @@ import { createClient } from '@/lib/supabase/server';
 import { requireAdmin } from '@/lib/auth-middleware';
 import { uploadImages } from '@/lib/cloudflare-r2';
 
+// Configure route to handle larger file uploads (50MB limit for multiple images)
+export const runtime = 'nodejs';
+export const maxDuration = 60; // 60 seconds max
+
 export async function POST(request: NextRequest) {
   // Check admin authentication
   const { error: authError, user } = await requireAdmin();

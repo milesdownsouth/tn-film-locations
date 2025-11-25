@@ -58,6 +58,22 @@ export default function AddLocationForm() {
       return;
     }
 
+    // Check individual file sizes (max 10MB per file)
+    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+    const oversizedFiles = files.filter(file => file.size > MAX_FILE_SIZE);
+    if (oversizedFiles.length > 0) {
+      setError(`Some images are too large. Maximum file size is 10MB per image. Please compress or resize the images.`);
+      return;
+    }
+
+    // Check total upload size (max 40MB total to be safe with server limits)
+    const MAX_TOTAL_SIZE = 40 * 1024 * 1024; // 40MB
+    const newTotalSize = [...imageFiles, ...files].reduce((total, file) => total + file.size, 0);
+    if (newTotalSize > MAX_TOTAL_SIZE) {
+      setError(`Total upload size exceeds 40MB limit. Current total: ${(newTotalSize / 1024 / 1024).toFixed(2)}MB. Please remove or compress some images.`);
+      return;
+    }
+
     setImageFiles(prev => [...prev, ...files]);
 
     // Create previews
@@ -156,6 +172,11 @@ export default function AddLocationForm() {
       });
 
       if (!response.ok) {
+        // Check for 413 Payload Too Large error
+        if (response.status === 413) {
+          throw new Error('Upload size too large. Please reduce the number of images or compress them. Maximum total upload size is 40MB.');
+        }
+
         let errorMessage = 'Failed to create location';
         try {
           const errorData = await response.json();
@@ -167,7 +188,13 @@ export default function AddLocationForm() {
           // If we can't parse the response as JSON, show the raw response
           const responseText = await response.text();
           console.error('Non-JSON error response:', responseText);
-          errorMessage = `Server error (${response.status}): Unable to parse response. Check console for details.`;
+
+          // Check if it's a "Request Entity Too Large" error
+          if (responseText.includes('Request Entity Too Large') || responseText.includes('Request En')) {
+            errorMessage = 'Upload size too large. Please reduce the number of images or compress them. Maximum total upload size is 40MB.';
+          } else {
+            errorMessage = `Server error (${response.status}): Unable to parse response. Check console for details.`;
+          }
         }
         throw new Error(errorMessage);
       }
