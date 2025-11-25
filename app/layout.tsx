@@ -7,6 +7,9 @@ import { checkAuth } from "@/lib/auth-middleware";
 export const metadata: Metadata = {
   title: "TN Film Locations | Tennessee Film Location Scouting",
   description: "Discover and manage film locations across Tennessee. Find the perfect setting for your next production with our comprehensive location database.",
+  icons: {
+    icon: "/TFL-favicon.png",
+  },
 };
 
 // Mark layout as dynamic since we use cookies for authentication
