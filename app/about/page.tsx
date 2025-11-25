@@ -17,7 +17,6 @@ if (typeof window !== 'undefined') {
 export default function AboutPage() {
   const heroTextRef = useRef<HTMLDivElement>(null);
   const photosRef = useRef<HTMLDivElement>(null);
-  const numbersRef = useRef<HTMLDivElement>(null);
   const fredSectionRef = useRef<HTMLDivElement>(null);
 
   // Hero animations
@@ -46,47 +45,6 @@ export default function AboutPage() {
           stagger: 0.15,
           ease: 'power3.out',
           delay: 0.5,
-        });
-      }
-
-      // Animate numbers section with scroll trigger
-      if (numbersRef.current) {
-        const stats = numbersRef.current.querySelectorAll('.stat-item');
-        gsap.from(stats, {
-          opacity: 0,
-          y: 40,
-          duration: 0.8,
-          stagger: 0.1,
-          ease: 'power3.out',
-          scrollTrigger: {
-            trigger: numbersRef.current,
-            start: 'top 80%',
-            toggleActions: 'play none none none',
-          },
-        });
-
-        // Counter animation for numbers
-        const numbers = numbersRef.current.querySelectorAll('.stat-number');
-        numbers.forEach((number) => {
-          const target = number.textContent || '';
-          const numValue = parseInt(target.replace(/\D/g, ''));
-          const hasPlus = target.includes('+');
-
-          gsap.from(number, {
-            textContent: 0,
-            duration: 2,
-            ease: 'power1.out',
-            snap: { textContent: 1 },
-            scrollTrigger: {
-              trigger: numbersRef.current,
-              start: 'top 80%',
-              toggleActions: 'play none none none',
-            },
-            onUpdate: function () {
-              const current = Math.ceil((this.targets()[0] as any).textContent);
-              (number as HTMLElement).textContent = hasPlus ? `${current}+` : current.toString();
-            },
-          });
         });
       }
 
@@ -153,39 +111,6 @@ export default function AboutPage() {
                   backgroundImage: 'url(https://images.unsplash.com/photo-1464207687429-7505649dae38?w=400&h=500&fit=crop)'
                 }}></div>
               </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* The Numbers Section - White Background */}
-      <section className="bg-white py-20 hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-4xl font-semibold text-black mb-16">THE NUMBERS</h2>
-
-          <div ref={numbersRef} className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {/* Stat 1 */}
-            <div className="stat-item text-center border-r border-gray-300 last:border-r-0">
-              <div className="stat-number text-5xl md:text-6xl font-bold text-black mb-2">150+</div>
-              <div className="text-gray-600">Locations</div>
-            </div>
-
-            {/* Stat 2 */}
-            <div className="stat-item text-center border-r border-gray-300 last:border-r-0">
-              <div className="stat-number text-5xl md:text-6xl font-bold text-black mb-2">40</div>
-              <div className="text-gray-600">City's</div>
-            </div>
-
-            {/* Stat 3 */}
-            <div className="stat-item text-center border-r border-gray-300 last:border-r-0">
-              <div className="stat-number text-5xl md:text-6xl font-bold text-black mb-2">30+</div>
-              <div className="text-gray-600">Yrs of Scouting<br />Experience</div>
-            </div>
-
-            {/* Stat 4 */}
-            <div className="stat-item text-center">
-              <div className="stat-number text-5xl md:text-6xl font-bold text-black mb-2">100</div>
-              <div className="text-gray-600">Yearly Bookings</div>
             </div>
           </div>
         </div>
