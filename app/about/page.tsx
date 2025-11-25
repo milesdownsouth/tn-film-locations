@@ -122,7 +122,7 @@ export default function AboutPage() {
                 WE HELP YOU FIND THE<br />RIGHT FILM LOCATION
               </h1>
               <p className="text-gray-300 mb-8">
-                Tennessee's film industry is booming, and finding the perfect location shouldn't slow you down. With decades of experience and deep roots across the state, we connect production teams with distinctive venues that bring stories to life. From historic landmarks to modern spaces, we know Tennessee's hidden gems—and we're here to make your location scouting effortless.
+                Tennessee's film industry is booming, and finding the perfect location should not slow you down. Tennessee Film Locations (TFL) is a full-service location company based in the greater Nashville area. We are your one stop shop for all your location needs. We offer location scouting, management, and a comprehensive film library with venue spaces and film locations for your next event, photo shoot or film project. With decades of experience and deep roots across the state, we connect production teams with distinctive venues that bring stories to life. From historic landmarks to modern spaces, we know Tennessee's hidden gems—and we are here to make your location scouting effortless.
               </p>
               <Link href="/search">
                 <button className="bg-[#C41E3A] text-white px-8 py-3 rounded hover:bg-[#a01729] transition-colors font-bold uppercase">
@@ -159,7 +159,7 @@ export default function AboutPage() {
       </section>
 
       {/* The Numbers Section - White Background */}
-      <section className="bg-white py-20">
+      <section className="bg-white py-20 hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-4xl font-semibold text-black mb-16">THE NUMBERS</h2>
 
@@ -201,12 +201,12 @@ export default function AboutPage() {
             {/* Right Side - Bio */}
             <div ref={fredSectionRef}>
               <h2 className="text-4xl font-semibold mb-2">FRED JOVE</h2>
-              <p className="text-sm mb-6 opacity-90">Founder & Location Scout</p>
+              <p className="text-sm mb-6 opacity-90">Founder, Location Manager & Scout</p>
               <p className="text-white mb-4">
-                With over 30 years in the film and location scouting industry, Fred founded TN Film Locations to solve a problem he saw repeatedly: talented production teams spending valuable time and resources searching for the right venue.
+                With over 25 years in the film industry, Fred founded Tennessee Film Locations (TFL) to solve a problem he saw repeatedly; production teams spending valuable time and resources searching for the right location.
               </p>
               <p className="text-white mb-4">
-                What started as a personal network of trusted locations has grown into Tennessee's most comprehensive film location database. Today, we work with productions of all sizes—from independent filmmakers to major studios—helping them discover spaces that exceed expectations and stay within budget.
+                What started as a personal network of trusted locations has grown into a reliable film location database. Today, we work with productions of all sizes from independent filmmakers to major studios helping them discover spaces that exceed expectations and stay within budget.
               </p>
               <p className="text-white">
                 Our mission is simple: make location scouting in Tennessee seamless, efficient, and inspiring.

@@ -49,7 +49,7 @@ export function Footer({ isLoggedIn = false }: FooterProps) {
 
         {/* Copyright */}
         <div className="text-center text-gray-400 text-sm">
-          © 2025 TN FILM LOCATIONS LLC. All Rights Reserved.
+          © 2025 TENNESSEE FILM LOCATIONS LLC. All Rights Reserved.
         </div>
       </div>
     </footer>
