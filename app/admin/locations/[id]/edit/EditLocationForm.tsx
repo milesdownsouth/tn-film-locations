@@ -378,9 +378,9 @@ export default function EditLocationForm({ location }: EditLocationFormProps) {
               </div>
             </div>
 
-            {/* Amenities */}
+            {/* Features */}
             <div>
-              <h2 className="text-xl font-semibold text-black mb-4">Amenities</h2>
+              <h2 className="text-xl font-semibold text-black mb-4">Features</h2>
 
               <div className="flex gap-2 mb-4">
                 <input
@@ -389,7 +389,7 @@ export default function EditLocationForm({ location }: EditLocationFormProps) {
                   onChange={(e) => setNewAmenity(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addAmenity())}
                   className="flex-1 px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#C41E3A]"
-                  placeholder="Add amenity..."
+                  placeholder="Add feature..."
                 />
                 <button
                   type="button"

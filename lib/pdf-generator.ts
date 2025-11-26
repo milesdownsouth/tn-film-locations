@@ -91,9 +91,6 @@ export async function generateLocationsPDF(
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
 
-    doc.text(`Address: ${location.address}`, margin, yPosition);
-    yPosition += lineHeight;
-
     doc.text(`City: ${location.city}, County: ${location.county}`, margin, yPosition);
     yPosition += lineHeight;
 
@@ -137,15 +134,6 @@ export async function generateLocationsPDF(
       doc.text(line, margin + 5, yPosition);
       yPosition += lineHeight;
     });
-
-    // Contact info
-    yPosition += lineHeight / 2;
-    doc.text(`Contact: ${location.contact_name}`, margin, yPosition);
-    yPosition += lineHeight;
-    doc.text(`Email: ${location.contact_email}`, margin, yPosition);
-    yPosition += lineHeight;
-    doc.text(`Phone: ${location.contact_phone}`, margin, yPosition);
-    yPosition += lineHeight;
 
     if (location.images && location.images.length > 1) {
       doc.text(`Additional Photos: ${location.images.length - 1} photo(s)`, margin, yPosition);

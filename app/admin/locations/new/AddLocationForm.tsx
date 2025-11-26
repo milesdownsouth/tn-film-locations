@@ -384,9 +384,9 @@ export default function AddLocationForm() {
               </div>
             </div>
 
-            {/* Amenities */}
+            {/* Features */}
             <div>
-              <h2 className="text-xl font-semibold text-black mb-4">Amenities</h2>
+              <h2 className="text-xl font-semibold text-black mb-4">Features</h2>
 
               <div className="flex gap-2 mb-4">
                 <input
