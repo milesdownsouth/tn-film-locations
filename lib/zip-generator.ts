@@ -7,23 +7,37 @@ import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 
 /**
- * Fetch image directly (requires CORS to be configured on R2)
+ * Fetch image via server-side proxy to avoid CORS issues
  * @param url - Image URL
  * @returns Blob of the image or null if failed
  */
 async function fetchImage(url: string): Promise<Blob | null> {
   try {
-    const response = await fetch(url, {
-      mode: 'cors',
-      credentials: 'omit',
-    });
+    const proxyUrl = `/api/image-proxy?url=${encodeURIComponent(url)}`;
+    const response = await fetch(proxyUrl);
 
     if (!response.ok) {
-      console.error('Failed to fetch image:', response.status, url);
+      console.error('Image proxy failed:', response.status);
       return null;
     }
 
-    return await response.blob();
+    const data = await response.json();
+    if (!data.dataUrl) {
+      return null;
+    }
+
+    // Convert base64 data URL back to blob
+    const base64Data = data.dataUrl.split(',')[1];
+    const contentType = data.contentType || 'image/webp';
+    const byteCharacters = atob(base64Data);
+    const byteNumbers = new Array(byteCharacters.length);
+
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+
+    const byteArray = new Uint8Array(byteNumbers);
+    return new Blob([byteArray], { type: contentType });
   } catch (error) {
     console.error('Error fetching image:', error);
     return null;

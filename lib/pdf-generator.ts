@@ -14,32 +14,34 @@ const LIGHT_GRAY = '#666666';
 const BORDER_GRAY = '#E5E5E5';
 
 /**
- * Helper function to load image as base64
- * Fetches image directly (requires CORS to be configured on R2)
+ * Helper function to load image as base64 via server-side proxy
+ * This avoids CORS issues with R2 images
  */
-async function loadImageAsBase64(url: string): Promise<string> {
+async function loadImageViaProxy(url: string): Promise<string> {
   try {
-    const response = await fetch(url, {
-      mode: 'cors',
-      credentials: 'omit',
-    });
+    const proxyUrl = `/api/image-proxy?url=${encodeURIComponent(url)}`;
+    const response = await fetch(proxyUrl);
 
     if (!response.ok) {
-      console.error('Failed to fetch image:', response.status, url);
+      console.error('Image proxy failed:', response.status);
       return '';
     }
 
-    const blob = await response.blob();
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
+    const data = await response.json();
+    return data.dataUrl || '';
   } catch (error) {
-    console.error('Error loading image:', error);
+    console.error('Error loading image via proxy:', error);
     return '';
   }
+}
+
+/**
+ * Helper function to load image as base64
+ * Uses server-side proxy to reliably fetch R2 images
+ */
+async function loadImageAsBase64(url: string): Promise<string> {
+  // Use proxy for R2 images to avoid CORS issues
+  return loadImageViaProxy(url);
 }
 
 /**
