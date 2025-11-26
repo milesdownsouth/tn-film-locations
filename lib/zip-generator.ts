@@ -7,39 +7,25 @@ import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 
 /**
- * Fetch image through server-side proxy to avoid CORS issues
+ * Fetch image directly (requires CORS to be configured on R2)
  * @param url - Image URL
  * @returns Blob of the image or null if failed
  */
-async function fetchImageViaProxy(url: string): Promise<Blob | null> {
+async function fetchImage(url: string): Promise<Blob | null> {
   try {
-    const proxyUrl = `/api/image-proxy?url=${encodeURIComponent(url)}`;
-    const response = await fetch(proxyUrl);
+    const response = await fetch(url, {
+      mode: 'cors',
+      credentials: 'omit',
+    });
 
     if (!response.ok) {
-      console.error('Image proxy failed:', response.status);
+      console.error('Failed to fetch image:', response.status, url);
       return null;
     }
 
-    const data = await response.json();
-    if (!data.dataUrl) {
-      return null;
-    }
-
-    // Convert base64 data URL back to blob
-    const base64Data = data.dataUrl.split(',')[1];
-    const contentType = data.contentType || 'image/jpeg';
-    const byteCharacters = atob(base64Data);
-    const byteNumbers = new Array(byteCharacters.length);
-
-    for (let i = 0; i < byteCharacters.length; i++) {
-      byteNumbers[i] = byteCharacters.charCodeAt(i);
-    }
-
-    const byteArray = new Uint8Array(byteNumbers);
-    return new Blob([byteArray], { type: contentType });
+    return await response.blob();
   } catch (error) {
-    console.error('Error fetching image via proxy:', error);
+    console.error('Error fetching image:', error);
     return null;
   }
 }
@@ -64,10 +50,10 @@ export async function downloadLocationImagesAsZip(
     throw new Error('Failed to create ZIP folder');
   }
 
-  // Fetch all images through proxy and add them to the ZIP
+  // Fetch all images and add them to the ZIP
   const imagePromises = imageUrls.map(async (url, index) => {
     try {
-      const blob = await fetchImageViaProxy(url);
+      const blob = await fetchImage(url);
       if (!blob) {
         console.error(`Failed to fetch image: ${url}`);
         return null;
@@ -133,10 +119,10 @@ export async function downloadMultipleLocationsAsZip(
 
     if (!folder) continue;
 
-    // Add all images for this location through proxy
+    // Add all images for this location
     const imagePromises = location.imageUrls.map(async (url, index) => {
       try {
-        const blob = await fetchImageViaProxy(url);
+        const blob = await fetchImage(url);
         if (!blob) return null;
 
         const extension = getFileExtension(url) || 'webp';
@@ -157,6 +143,6 @@ export async function downloadMultipleLocationsAsZip(
   const content = await zip.generateAsync({ type: 'blob' });
 
   // Trigger download
-  const fileName = `tn-film-locations-${new Date().toISOString().split('T')[0]}.zip`;
+  const fileName = `tennessee-film-locations-${new Date().toISOString().split('T')[0]}.zip`;
   saveAs(content, fileName);
 }
