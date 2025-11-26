@@ -7,6 +7,44 @@ import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 
 /**
+ * Fetch image through server-side proxy to avoid CORS issues
+ * @param url - Image URL
+ * @returns Blob of the image or null if failed
+ */
+async function fetchImageViaProxy(url: string): Promise<Blob | null> {
+  try {
+    const proxyUrl = `/api/image-proxy?url=${encodeURIComponent(url)}`;
+    const response = await fetch(proxyUrl);
+
+    if (!response.ok) {
+      console.error('Image proxy failed:', response.status);
+      return null;
+    }
+
+    const data = await response.json();
+    if (!data.dataUrl) {
+      return null;
+    }
+
+    // Convert base64 data URL back to blob
+    const base64Data = data.dataUrl.split(',')[1];
+    const contentType = data.contentType || 'image/jpeg';
+    const byteCharacters = atob(base64Data);
+    const byteNumbers = new Array(byteCharacters.length);
+
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+
+    const byteArray = new Uint8Array(byteNumbers);
+    return new Blob([byteArray], { type: contentType });
+  } catch (error) {
+    console.error('Error fetching image via proxy:', error);
+    return null;
+  }
+}
+
+/**
  * Download all images for a location as a ZIP file
  * @param locationName - Name of the location
  * @param imageUrls - Array of image URLs
@@ -26,17 +64,16 @@ export async function downloadLocationImagesAsZip(
     throw new Error('Failed to create ZIP folder');
   }
 
-  // Fetch all images and add them to the ZIP
+  // Fetch all images through proxy and add them to the ZIP
   const imagePromises = imageUrls.map(async (url, index) => {
     try {
-      const response = await fetch(url);
-      if (!response.ok) {
+      const blob = await fetchImageViaProxy(url);
+      if (!blob) {
         console.error(`Failed to fetch image: ${url}`);
         return null;
       }
 
-      const blob = await response.blob();
-      const extension = getFileExtension(url) || 'jpg';
+      const extension = getFileExtension(url) || 'webp';
       const fileName = `image-${(index + 1).toString().padStart(3, '0')}.${extension}`;
 
       folder.file(fileName, blob);
@@ -96,14 +133,13 @@ export async function downloadMultipleLocationsAsZip(
 
     if (!folder) continue;
 
-    // Add all images for this location
+    // Add all images for this location through proxy
     const imagePromises = location.imageUrls.map(async (url, index) => {
       try {
-        const response = await fetch(url);
-        if (!response.ok) return null;
+        const blob = await fetchImageViaProxy(url);
+        if (!blob) return null;
 
-        const blob = await response.blob();
-        const extension = getFileExtension(url) || 'jpg';
+        const extension = getFileExtension(url) || 'webp';
         const fileName = `image-${(index + 1).toString().padStart(3, '0')}.${extension}`;
 
         folder.file(fileName, blob);

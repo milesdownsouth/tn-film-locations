@@ -15,17 +15,21 @@ const BORDER_GRAY = '#E5E5E5';
 
 /**
  * Helper function to load image as base64
+ * Uses server-side proxy to avoid CORS issues with R2 images
  */
 async function loadImageAsBase64(url: string): Promise<string> {
   try {
-    const response = await fetch(url);
-    const blob = await response.blob();
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
+    // Use image proxy API to fetch R2 images server-side (avoids CORS)
+    const proxyUrl = `/api/image-proxy?url=${encodeURIComponent(url)}`;
+    const response = await fetch(proxyUrl);
+
+    if (!response.ok) {
+      console.error('Image proxy failed:', response.status);
+      return '';
+    }
+
+    const data = await response.json();
+    return data.dataUrl || '';
   } catch (error) {
     console.error('Error loading image:', error);
     return '';
