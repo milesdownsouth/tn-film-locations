@@ -151,16 +151,23 @@ export default function LocationDetailPage({ params }: { params: Promise<{ id: s
     if (!location) return;
 
     try {
-      // Check authentication before allowing download
-      const authCheck = await fetch('/api/saved-locations');
-      if (authCheck.status === 401) {
+      // Check authentication and get user email
+      const authResponse = await fetch('/api/debug/auth');
+      let userEmail = 'Tennessee Film Locations User';
+
+      if (authResponse.status === 401 || !authResponse.ok) {
         alert('Please log in to download PDFs');
         window.location.href = '/auth/login';
         return;
       }
 
+      const authData = await authResponse.json();
+      if (authData.user && authData.user.email) {
+        userEmail = authData.user.email;
+      }
+
       const { downloadLocationsPDF } = await import('@/lib/pdf-generator');
-      downloadLocationsPDF([location], 'guest@tnfilmlocations.com');
+      downloadLocationsPDF([location], userEmail);
     } catch (err) {
       console.error('Error generating PDF:', err);
       alert('Failed to generate PDF. Please try again.');
