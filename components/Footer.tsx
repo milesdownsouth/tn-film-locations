@@ -17,7 +17,7 @@ export function Footer({ isLoggedIn = false }: FooterProps) {
         {/* Logo Centered */}
         <div className="flex justify-center mb-8">
           <Image
-            src="/TN-Film-Locations_white.png"
+            src="/tfl-logo-white2.png"
             alt="TN Film Locations"
             width={200}
             height={48}
@@ -32,9 +32,6 @@ export function Footer({ isLoggedIn = false }: FooterProps) {
           </Link>
           <Link href="/about" className="text-white hover:text-[#C41E3A] transition-colors font-medium uppercase text-sm">
             ABOUT
-          </Link>
-          <Link href="/services" className="text-white hover:text-[#C41E3A] transition-colors font-medium uppercase text-sm">
-            SERVICES
           </Link>
           <Link href="/search" className="text-white hover:text-[#C41E3A] transition-colors font-medium uppercase text-sm">
             LOCATION SEARCH
@@ -52,7 +49,7 @@ export function Footer({ isLoggedIn = false }: FooterProps) {
 
         {/* Copyright */}
         <div className="text-center text-gray-400 text-sm">
-          © 2025 TN FILM LOCATIONS LLC. All Rights Reserved.
+          © 2025 TENNESSEE FILM LOCATIONS LLC. All Rights Reserved.
         </div>
       </div>
     </footer>

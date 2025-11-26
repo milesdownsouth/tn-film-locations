@@ -277,7 +277,7 @@ export default function SearchContent() {
             ))}
           </select>
 
-          {/* Amenities Filter Button */}
+          {/* Features Filter Button */}
           <button
             type="button"
             onClick={() => setShowAmenitiesFilter(!showAmenitiesFilter)}
@@ -287,7 +287,7 @@ export default function SearchContent() {
                 : 'border-gray-300 text-gray-700 hover:border-[#C41E3A] hover:text-[#C41E3A]'
             }`}
           >
-            Amenities {selectedAmenities.length > 0 && `(${selectedAmenities.length})`}
+            Features {selectedAmenities.length > 0 && `(${selectedAmenities.length})`}
           </button>
 
           {(searchQuery || city || county || propertyType || selectedAmenities.length > 0) && (
@@ -308,10 +308,10 @@ export default function SearchContent() {
           )}
         </div>
 
-        {/* Amenities Dropdown */}
+        {/* Features Dropdown */}
         {showAmenitiesFilter && availableAmenities.length > 0 && (
           <div className="mb-8 bg-gray-50 rounded-lg p-6 border border-gray-200">
-            <h3 className="text-lg font-semibold text-black mb-4">Filter by Amenities</h3>
+            <h3 className="text-lg font-semibold text-black mb-4">Filter by Features</h3>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
               {availableAmenities.map((amenity) => (
                 <label

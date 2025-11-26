@@ -46,22 +46,19 @@ export function Header() {
   return (
     <header className="bg-white shadow-sm">
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-20">
+        <div className="grid grid-cols-[auto_1fr_auto] items-center h-20 gap-4">
           {/* Logo */}
           <Link href="/" className="flex items-center">
             <Logo />
           </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
+          {/* Desktop Navigation - Centered */}
+          <div className="hidden md:flex items-center justify-center space-x-8">
             <Link href="/" className="text-black hover:text-[#C41E3A] transition-colors font-medium uppercase text-sm">
               HOME
             </Link>
             <Link href="/about" className="text-black hover:text-[#C41E3A] transition-colors font-medium uppercase text-sm">
               ABOUT
-            </Link>
-            <Link href="/services" className="text-black hover:text-[#C41E3A] transition-colors font-medium uppercase text-sm">
-              SERVICES
             </Link>
             <Link href="/search" className="text-black hover:text-[#C41E3A] transition-colors font-medium uppercase text-sm">
               LOCATION SEARCH
@@ -69,7 +66,7 @@ export function Header() {
           </div>
 
           {/* Right Side - User Icon & Contact Button */}
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="hidden md:flex items-center justify-end space-x-4">
             {/* User Icon */}
             <Link href="/account" className="text-black hover:text-[#C41E3A] transition-colors">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -87,7 +84,7 @@ export function Header() {
 
           {/* Mobile menu button */}
           <button
-            className="md:hidden p-2 text-black"
+            className="md:hidden p-2 text-black justify-self-end"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             aria-label="Toggle menu"
           >
@@ -125,13 +122,6 @@ export function Header() {
               onClick={() => setIsMenuOpen(false)}
             >
               ABOUT
-            </Link>
-            <Link
-              href="/services"
-              className="mobile-menu-item block text-black hover:text-[#C41E3A] transition-colors font-medium uppercase text-sm"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              SERVICES
             </Link>
             <Link
               href="/search"

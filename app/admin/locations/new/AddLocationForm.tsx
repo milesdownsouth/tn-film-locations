@@ -8,12 +8,15 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import imageCompression from 'browser-image-compression';
 import { PROPERTY_TYPES, TN_COUNTIES } from '@/types/database';
 
 export default function AddLocationForm() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [compressing, setCompressing] = useState(false);
+  const [compressionProgress, setCompressionProgress] = useState({ current: 0, total: 0 });
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
 
@@ -50,24 +53,74 @@ export default function AddLocationForm() {
     }
   };
 
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
 
-    if (files.length + imageFiles.length > 50) {
-      setError('Maximum 50 images allowed');
+    if (files.length + imageFiles.length > 200) {
+      setError('Maximum 200 images allowed per location');
       return;
     }
 
-    setImageFiles(prev => [...prev, ...files]);
+    setError(null);
+    setCompressing(true);
+    setCompressionProgress({ current: 0, total: files.length });
 
-    // Create previews
-    files.forEach(file => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreviews(prev => [...prev, reader.result as string]);
+    try {
+      const compressedFiles: File[] = [];
+      const newPreviews: string[] = [];
+
+      // Compression options
+      const options = {
+        maxSizeMB: 2, // Maximum 2MB per image after compression
+        maxWidthOrHeight: 2000, // Max dimension 2000px
+        useWebWorker: true,
+        fileType: 'image/jpeg' as const,
       };
-      reader.readAsDataURL(file);
-    });
+
+      // Compress each image
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        setCompressionProgress({ current: i + 1, total: files.length });
+
+        try {
+          // Compress the image
+          const compressedFile = await imageCompression(file, options);
+
+          // Rename to preserve original name but with .jpg extension
+          const newFile = new File(
+            [compressedFile],
+            file.name.replace(/\.[^.]+$/, '.jpg'),
+            { type: 'image/jpeg' }
+          );
+
+          compressedFiles.push(newFile);
+
+          // Create preview
+          const preview = await imageCompression.getDataUrlFromFile(newFile);
+          newPreviews.push(preview);
+        } catch (compressionError) {
+          console.error('Error compressing image:', file.name, compressionError);
+          // If compression fails, use original file
+          compressedFiles.push(file);
+          const reader = new FileReader();
+          const preview = await new Promise<string>((resolve) => {
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.readAsDataURL(file);
+          });
+          newPreviews.push(preview);
+        }
+      }
+
+      setImageFiles(prev => [...prev, ...compressedFiles]);
+      setImagePreviews(prev => [...prev, ...newPreviews]);
+
+    } catch (error) {
+      console.error('Error processing images:', error);
+      setError('Failed to process images. Please try again.');
+    } finally {
+      setCompressing(false);
+      setCompressionProgress({ current: 0, total: 0 });
+    }
   };
 
   const removeImage = (index: number) => {
@@ -156,11 +209,41 @@ export default function AddLocationForm() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to create location');
+        // Check for 413 Payload Too Large error
+        if (response.status === 413) {
+          throw new Error('Upload size too large. Please reduce the number of images. Try uploading fewer images at once, or contact support if this issue persists.');
+        }
+
+        let errorMessage = 'Failed to create location';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+          if (errorData.details) {
+            errorMessage += ` (${errorData.details})`;
+          }
+        } catch (parseError) {
+          // If we can't parse the response as JSON, show the raw response
+          const responseText = await response.text();
+          console.error('Non-JSON error response:', responseText);
+
+          // Check if it's a "Request Entity Too Large" error
+          if (responseText.includes('Request Entity Too Large') || responseText.includes('Request En')) {
+            errorMessage = 'Upload size too large. Please reduce the number of images. Try uploading fewer images at once.';
+          } else {
+            errorMessage = `Server error (${response.status}): Unable to parse response. Check console for details.`;
+          }
+        }
+        throw new Error(errorMessage);
       }
 
-      const { location } = await response.json();
+      let location;
+      try {
+        const responseData = await response.json();
+        location = responseData.location;
+      } catch (parseError) {
+        console.error('Error parsing success response:', parseError);
+        throw new Error('Location may have been created but response was invalid');
+      }
 
       // Redirect to location detail page
       router.push(`/admin/locations`);
@@ -485,23 +568,45 @@ export default function AddLocationForm() {
 
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Upload Images (Max 50)
+                  Upload Images (Max 200)
                 </label>
                 <input
                   type="file"
                   accept="image/*"
                   multiple
                   onChange={handleImageSelect}
+                  disabled={compressing}
                   className="block w-full text-sm text-gray-500
                     file:mr-4 file:py-2 file:px-4
                     file:rounded file:border-0
                     file:text-sm file:font-semibold
                     file:bg-[#C41E3A] file:text-white
                     hover:file:bg-[#a01729]
-                    cursor-pointer"
+                    cursor-pointer
+                    disabled:opacity-50 disabled:cursor-not-allowed"
                 />
+
+                {compressing && (
+                  <div className="mt-2">
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 bg-gray-200 rounded-full h-2">
+                        <div
+                          className="bg-[#C41E3A] h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${(compressionProgress.current / compressionProgress.total) * 100}%` }}
+                        />
+                      </div>
+                      <span className="text-sm text-gray-600">
+                        {compressionProgress.current}/{compressionProgress.total}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Compressing images for faster upload...
+                    </p>
+                  </div>
+                )}
+
                 <p className="text-sm text-gray-500 mt-1">
-                  {imageFiles.length} image(s) selected
+                  {imageFiles.length} image(s) selected • Images are automatically compressed
                 </p>
                 {imagePreviews.length > 0 && (
                   <p className="text-sm text-blue-600 mt-1 font-medium">
@@ -548,10 +653,10 @@ export default function AddLocationForm() {
             <div className="flex gap-4">
               <button
                 type="submit"
-                disabled={loading}
-                className="bg-[#C41E3A] text-white px-8 py-3 rounded hover:bg-[#a01729] transition-colors font-bold uppercase disabled:opacity-50"
+                disabled={loading || compressing}
+                className="bg-[#C41E3A] text-white px-8 py-3 rounded hover:bg-[#a01729] transition-colors font-bold uppercase disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? 'Creating...' : 'Create Location'}
+                {compressing ? 'Compressing Images...' : loading ? 'Creating...' : 'Create Location'}
               </button>
               <Link
                 href="/admin/locations"
