@@ -131,6 +131,7 @@ export async function POST(request: NextRequest) {
         await resend.emails.send({
           from: 'info@tennfilmlocations.com',
           to: recipientEmail,
+          replyTo: sanitizedData.email,
           subject: `New Contact Form Submission from ${sanitizedData.name}`,
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
