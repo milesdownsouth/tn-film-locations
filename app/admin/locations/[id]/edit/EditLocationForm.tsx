@@ -21,6 +21,7 @@ export default function EditLocationForm({ location }: EditLocationFormProps) {
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>(location.images || []);
+  const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0, uploading: false });
 
   const [formData, setFormData] = useState({
     name: location.name,
@@ -58,8 +59,8 @@ export default function EditLocationForm({ location }: EditLocationFormProps) {
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
 
-    if (files.length + imageFiles.length + existingImages.length > 50) {
-      setError('Maximum 50 images allowed');
+    if (files.length + imageFiles.length + existingImages.length > 200) {
+      setError('Maximum 200 images allowed');
       return;
     }
 
@@ -73,6 +74,39 @@ export default function EditLocationForm({ location }: EditLocationFormProps) {
       };
       reader.readAsDataURL(file);
     });
+  };
+
+  // Upload images in batches to avoid payload size limits
+  const uploadImagesInBatches = async (files: File[], locationName: string): Promise<string[]> => {
+    const BATCH_SIZE = 10;
+    const allImageUrls: string[] = [];
+
+    setUploadProgress({ current: 0, total: files.length, uploading: true });
+
+    for (let i = 0; i < files.length; i += BATCH_SIZE) {
+      const batch = files.slice(i, i + BATCH_SIZE);
+      const batchFormData = new FormData();
+      batchFormData.append('locationName', locationName);
+      batch.forEach((file) => batchFormData.append('images', file));
+
+      const response = await fetch('/api/admin/upload-images', {
+        method: 'POST',
+        body: batchFormData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to upload images');
+      }
+
+      const { imageUrls } = await response.json();
+      allImageUrls.push(...imageUrls);
+
+      setUploadProgress({ current: i + batch.length, total: files.length, uploading: true });
+    }
+
+    setUploadProgress({ current: files.length, total: files.length, uploading: false });
+    return allImageUrls;
   };
 
   const removeNewImage = (index: number) => {
@@ -133,7 +167,13 @@ export default function EditLocationForm({ location }: EditLocationFormProps) {
     setError(null);
 
     try {
-      // Prepare form data for multipart upload
+      // Upload new images in batches first (if any)
+      let newImageUrls: string[] = [];
+      if (imageFiles.length > 0) {
+        newImageUrls = await uploadImagesInBatches(imageFiles, formData.name);
+      }
+
+      // Prepare form data for location update
       const submitData = new FormData();
 
       // Add all text fields
@@ -150,10 +190,10 @@ export default function EditLocationForm({ location }: EditLocationFormProps) {
       // Add existing images that weren't removed
       submitData.append('existing_images', JSON.stringify(existingImages));
 
-      // Add new image files
-      imageFiles.forEach((file) => {
-        submitData.append('images', file);
-      });
+      // Add pre-uploaded new image URLs
+      if (newImageUrls.length > 0) {
+        submitData.append('newImageUrls', JSON.stringify(newImageUrls));
+      }
 
       const response = await fetch(`/api/admin/locations/${location.id}`, {
         method: 'PATCH',
@@ -172,6 +212,7 @@ export default function EditLocationForm({ location }: EditLocationFormProps) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setLoading(false);
+      setUploadProgress({ current: 0, total: 0, uploading: false });
     }
   };
 
@@ -516,26 +557,47 @@ export default function EditLocationForm({ location }: EditLocationFormProps) {
                 </div>
               )}
 
+              {/* Upload Progress */}
+              {uploadProgress.uploading && (
+                <div className="mb-4 bg-blue-50 border border-blue-200 rounded p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-blue-700">
+                      Uploading images...
+                    </span>
+                    <span className="text-sm text-blue-600">
+                      {uploadProgress.current} / {uploadProgress.total}
+                    </span>
+                  </div>
+                  <div className="w-full bg-blue-200 rounded-full h-2">
+                    <div
+                      className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${(uploadProgress.current / uploadProgress.total) * 100}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+
               {/* New Images */}
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Add New Images (Max {50 - existingImages.length - imageFiles.length} more)
+                  Add New Images (Max {200 - existingImages.length - imageFiles.length} more)
                 </label>
                 <input
                   type="file"
                   accept="image/*"
                   multiple
                   onChange={handleImageSelect}
+                  disabled={uploadProgress.uploading}
                   className="block w-full text-sm text-gray-500
                     file:mr-4 file:py-2 file:px-4
                     file:rounded file:border-0
                     file:text-sm file:font-semibold
                     file:bg-[#C41E3A] file:text-white
                     hover:file:bg-[#a01729]
-                    cursor-pointer"
+                    cursor-pointer disabled:opacity-50"
                 />
                 <p className="text-sm text-gray-500 mt-1">
-                  Total: {existingImages.length + imageFiles.length} of 50 images
+                  Total: {existingImages.length + imageFiles.length} of 200 images
                 </p>
               </div>
 
@@ -565,10 +627,14 @@ export default function EditLocationForm({ location }: EditLocationFormProps) {
             <div className="flex gap-4">
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || uploadProgress.uploading}
                 className="bg-[#C41E3A] text-white px-8 py-3 rounded hover:bg-[#a01729] transition-colors font-bold uppercase disabled:opacity-50"
               >
-                {loading ? 'Updating...' : 'Update Location'}
+                {uploadProgress.uploading
+                  ? `Uploading images (${uploadProgress.current}/${uploadProgress.total})...`
+                  : loading
+                    ? 'Updating...'
+                    : 'Update Location'}
               </button>
               <Link
                 href="/admin/locations"
