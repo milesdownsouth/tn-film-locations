@@ -17,6 +17,7 @@ export default function AddLocationForm() {
   const [error, setError] = useState<string | null>(null);
   const [compressing, setCompressing] = useState(false);
   const [compressionProgress, setCompressionProgress] = useState({ current: 0, total: 0 });
+  const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0, uploading: false });
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
 
@@ -178,13 +179,59 @@ export default function AddLocationForm() {
     }));
   };
 
+  // Upload images in batches to avoid payload size limits
+  const uploadImagesInBatches = async (files: File[], locationName: string): Promise<string[]> => {
+    const BATCH_SIZE = 10; // Upload 10 images at a time
+    const allImageUrls: string[] = [];
+    const totalBatches = Math.ceil(files.length / BATCH_SIZE);
+
+    setUploadProgress({ current: 0, total: files.length, uploading: true });
+
+    for (let i = 0; i < files.length; i += BATCH_SIZE) {
+      const batch = files.slice(i, i + BATCH_SIZE);
+      const batchFormData = new FormData();
+      batchFormData.append('locationName', locationName);
+
+      batch.forEach((file) => {
+        batchFormData.append('images', file);
+      });
+
+      const response = await fetch('/api/admin/upload-images', {
+        method: 'POST',
+        body: batchFormData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Failed to upload batch ${Math.floor(i / BATCH_SIZE) + 1}`);
+      }
+
+      const { imageUrls } = await response.json();
+      allImageUrls.push(...imageUrls);
+
+      setUploadProgress({ current: i + batch.length, total: files.length, uploading: true });
+    }
+
+    setUploadProgress({ current: files.length, total: files.length, uploading: false });
+    return allImageUrls;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
     try {
-      // Prepare form data for multipart upload
+      // Step 1: Upload images in batches if there are any
+      let imageUrls: string[] = [];
+      if (imageFiles.length > 0) {
+        if (!formData.name.trim()) {
+          throw new Error('Please enter a location name before uploading images');
+        }
+        imageUrls = await uploadImagesInBatches(imageFiles, formData.name);
+      }
+
+      // Step 2: Create location with image URLs (not files)
       const submitData = new FormData();
 
       // Add all text fields
@@ -198,10 +245,8 @@ export default function AddLocationForm() {
         }
       });
 
-      // Add image files
-      imageFiles.forEach((file) => {
-        submitData.append('images', file);
-      });
+      // Add image URLs as JSON instead of files
+      submitData.append('imageUrls', JSON.stringify(imageUrls));
 
       const response = await fetch('/api/admin/locations', {
         method: 'POST',
@@ -209,11 +254,6 @@ export default function AddLocationForm() {
       });
 
       if (!response.ok) {
-        // Check for 413 Payload Too Large error
-        if (response.status === 413) {
-          throw new Error('Upload size too large. Please reduce the number of images. Try uploading fewer images at once, or contact support if this issue persists.');
-        }
-
         let errorMessage = 'Failed to create location';
         try {
           const errorData = await response.json();
@@ -222,36 +262,21 @@ export default function AddLocationForm() {
             errorMessage += ` (${errorData.details})`;
           }
         } catch (parseError) {
-          // If we can't parse the response as JSON, show the raw response
           const responseText = await response.text();
           console.error('Non-JSON error response:', responseText);
-
-          // Check if it's a "Request Entity Too Large" error
-          if (responseText.includes('Request Entity Too Large') || responseText.includes('Request En')) {
-            errorMessage = 'Upload size too large. Please reduce the number of images. Try uploading fewer images at once.';
-          } else {
-            errorMessage = `Server error (${response.status}): Unable to parse response. Check console for details.`;
-          }
+          errorMessage = `Server error (${response.status}): Unable to parse response.`;
         }
         throw new Error(errorMessage);
       }
 
-      let location;
-      try {
-        const responseData = await response.json();
-        location = responseData.location;
-      } catch (parseError) {
-        console.error('Error parsing success response:', parseError);
-        throw new Error('Location may have been created but response was invalid');
-      }
-
-      // Redirect to location detail page
+      // Redirect to locations list
       router.push(`/admin/locations`);
     } catch (err) {
       console.error('Error creating location:', err);
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setLoading(false);
+      setUploadProgress({ current: 0, total: 0, uploading: false });
     }
   };
 
@@ -649,14 +674,32 @@ export default function AddLocationForm() {
               )}
             </div>
 
+            {/* Upload Progress */}
+            {uploadProgress.uploading && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+                  <span className="font-medium text-blue-800">
+                    Uploading images... {uploadProgress.current} of {uploadProgress.total}
+                  </span>
+                </div>
+                <div className="w-full bg-blue-200 rounded-full h-2">
+                  <div
+                    className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${(uploadProgress.current / uploadProgress.total) * 100}%` }}
+                  />
+                </div>
+              </div>
+            )}
+
             {/* Submit Button */}
             <div className="flex gap-4">
               <button
                 type="submit"
-                disabled={loading || compressing}
+                disabled={loading || compressing || uploadProgress.uploading}
                 className="bg-[#C41E3A] text-white px-8 py-3 rounded hover:bg-[#a01729] transition-colors font-bold uppercase disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {compressing ? 'Compressing Images...' : loading ? 'Creating...' : 'Create Location'}
+                {compressing ? 'Compressing Images...' : uploadProgress.uploading ? `Uploading ${uploadProgress.current}/${uploadProgress.total}...` : loading ? 'Creating...' : 'Create Location'}
               </button>
               <Link
                 href="/admin/locations"

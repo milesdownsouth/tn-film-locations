@@ -63,25 +63,38 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Extract image files
-    const imageFiles: File[] = [];
-    for (const [key, value] of formData.entries()) {
-      if (key === 'images' && value instanceof File) {
-        imageFiles.push(value);
+    // Get image URLs (either pre-uploaded via batch endpoint, or upload now)
+    let imageUrls: string[] = [];
+
+    // First check for pre-uploaded image URLs (from batch upload)
+    const imageUrlsJson = formData.get('imageUrls') as string;
+    if (imageUrlsJson) {
+      try {
+        imageUrls = JSON.parse(imageUrlsJson);
+      } catch (e) {
+        console.error('Error parsing imageUrls:', e);
       }
     }
 
-    // Upload images to R2
-    let imageUrls: string[] = [];
-    if (imageFiles.length > 0) {
-      try {
-        imageUrls = await uploadImages(imageFiles, locationData.name);
-      } catch (uploadError) {
-        console.error('Image upload error:', uploadError);
-        return NextResponse.json(
-          { error: 'Failed to upload images' },
-          { status: 500 }
-        );
+    // If no pre-uploaded URLs, check for image files (backwards compatibility)
+    if (imageUrls.length === 0) {
+      const imageFiles: File[] = [];
+      for (const [key, value] of formData.entries()) {
+        if (key === 'images' && value instanceof File) {
+          imageFiles.push(value);
+        }
+      }
+
+      if (imageFiles.length > 0) {
+        try {
+          imageUrls = await uploadImages(imageFiles, locationData.name);
+        } catch (uploadError) {
+          console.error('Image upload error:', uploadError);
+          return NextResponse.json(
+            { error: 'Failed to upload images' },
+            { status: 500 }
+          );
+        }
       }
     }
 
