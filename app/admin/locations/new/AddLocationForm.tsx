@@ -87,12 +87,13 @@ export default function AddLocationForm() {
       const compressedFiles: File[] = [];
       const newPreviews: string[] = [];
 
-      // Compression options
+      // Compression options - keep files small to avoid upload limits
       const options = {
-        maxSizeMB: 2, // Maximum 2MB per image after compression
-        maxWidthOrHeight: 2000, // Max dimension 2000px
+        maxSizeMB: 1, // Maximum 1MB per image after compression
+        maxWidthOrHeight: 1920, // Max dimension 1920px (Full HD)
         useWebWorker: true,
         fileType: 'image/jpeg' as const,
+        initialQuality: 0.8, // Start with 80% quality
       };
 
       // Compress each image
@@ -205,8 +206,9 @@ export default function AddLocationForm() {
   };
 
   // Upload images in batches to avoid payload size limits
+  // Vercel has a 4.5MB limit per request, so we keep batches small
   const uploadImagesInBatches = async (files: File[], locationName: string): Promise<string[]> => {
-    const BATCH_SIZE = 10; // Upload 10 images at a time
+    const BATCH_SIZE = 2; // Upload 2 images at a time to stay under 4.5MB limit
     const allImageUrls: string[] = [];
     const totalBatches = Math.ceil(files.length / BATCH_SIZE);
 

@@ -8,6 +8,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import imageCompression from 'browser-image-compression';
 import { PROPERTY_TYPES, TN_COUNTIES, type Location } from '@/types/database';
 
 interface EditLocationFormProps {
@@ -22,6 +23,8 @@ export default function EditLocationForm({ location }: EditLocationFormProps) {
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>(location.images || []);
   const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0, uploading: false });
+  const [compressing, setCompressing] = useState(false);
+  const [compressionProgress, setCompressionProgress] = useState({ current: 0, total: 0 });
 
   const [formData, setFormData] = useState({
     name: location.name,
@@ -56,7 +59,7 @@ export default function EditLocationForm({ location }: EditLocationFormProps) {
     }
   };
 
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     const totalAfterAdd = files.length + imageFiles.length + existingImages.length;
 
@@ -86,21 +89,80 @@ export default function EditLocationForm({ location }: EditLocationFormProps) {
     }
 
     setError(null);
-    setImageFiles(prev => [...prev, ...files]);
+    setCompressing(true);
+    setCompressionProgress({ current: 0, total: files.length });
 
-    // Create previews
-    files.forEach(file => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreviews(prev => [...prev, reader.result as string]);
+    try {
+      const compressedFiles: File[] = [];
+      const newPreviews: string[] = [];
+
+      // Compression options - keep files small to avoid upload limits
+      const options = {
+        maxSizeMB: 1, // Maximum 1MB per image after compression
+        maxWidthOrHeight: 1920, // Max dimension 1920px (Full HD)
+        useWebWorker: true,
+        fileType: 'image/jpeg' as const,
+        initialQuality: 0.8, // Start with 80% quality
       };
-      reader.readAsDataURL(file);
-    });
+
+      // Compress each image
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        setCompressionProgress({ current: i + 1, total: files.length });
+
+        try {
+          // Compress the image
+          const compressedFile = await imageCompression(file, options);
+
+          // Rename to preserve original name but with .jpg extension
+          const newFile = new File(
+            [compressedFile],
+            file.name.replace(/\.[^.]+$/, '.jpg'),
+            { type: 'image/jpeg' }
+          );
+
+          compressedFiles.push(newFile);
+
+          // Create preview
+          const preview = await imageCompression.getDataUrlFromFile(newFile);
+          newPreviews.push(preview);
+        } catch (compressionError) {
+          console.error('Error compressing image:', file.name, compressionError);
+          // If compression fails, use original file
+          compressedFiles.push(file);
+          const reader = new FileReader();
+          const preview = await new Promise<string>((resolve) => {
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.readAsDataURL(file);
+          });
+          newPreviews.push(preview);
+        }
+      }
+
+      setImageFiles(prev => [...prev, ...compressedFiles]);
+      setImagePreviews(prev => [...prev, ...newPreviews]);
+
+    } catch (error) {
+      console.error('Error processing images:', error);
+      setError(
+        `Could not process the images!\n\n` +
+        `There was a problem preparing your images for upload.\n\n` +
+        `What to do:\n` +
+        `1. Try selecting fewer images at once (10-20 at a time works best)\n` +
+        `2. Make sure the images are not corrupted\n` +
+        `3. Try refreshing the page and starting over\n\n` +
+        `If this keeps happening, please contact support.`
+      );
+    } finally {
+      setCompressing(false);
+      setCompressionProgress({ current: 0, total: 0 });
+    }
   };
 
   // Upload images in batches to avoid payload size limits
+  // Vercel has a 4.5MB limit per request, so we keep batches small
   const uploadImagesInBatches = async (files: File[], locationName: string): Promise<string[]> => {
-    const BATCH_SIZE = 10;
+    const BATCH_SIZE = 2; // Upload 2 images at a time to stay under 4.5MB limit
     const allImageUrls: string[] = [];
     const totalBatches = Math.ceil(files.length / BATCH_SIZE);
 
@@ -834,6 +896,26 @@ export default function EditLocationForm({ location }: EditLocationFormProps) {
                 </div>
               )}
 
+              {/* Compression Progress */}
+              {compressing && (
+                <div className="mb-4 bg-amber-50 border border-amber-200 rounded p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-amber-700">
+                      Compressing images for faster upload...
+                    </span>
+                    <span className="text-sm text-amber-600">
+                      {compressionProgress.current} / {compressionProgress.total}
+                    </span>
+                  </div>
+                  <div className="w-full bg-amber-200 rounded-full h-2">
+                    <div
+                      className="bg-amber-600 h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${(compressionProgress.current / compressionProgress.total) * 100}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+
               {/* Upload Progress */}
               {uploadProgress.uploading && (
                 <div className="mb-4 bg-blue-50 border border-blue-200 rounded p-4">
@@ -864,16 +946,19 @@ export default function EditLocationForm({ location }: EditLocationFormProps) {
                   accept="image/*"
                   multiple
                   onChange={handleImageSelect}
-                  disabled={uploadProgress.uploading}
+                  disabled={compressing || uploadProgress.uploading}
                   className="block w-full text-sm text-gray-500
                     file:mr-4 file:py-2 file:px-4
                     file:rounded file:border-0
                     file:text-sm file:font-semibold
                     file:bg-[#C41E3A] file:text-white
                     hover:file:bg-[#a01729]
-                    cursor-pointer disabled:opacity-50"
+                    cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 />
                 <p className="text-sm text-gray-500 mt-1">
+                  {imageFiles.length} new image(s) selected • Images are automatically compressed
+                </p>
+                <p className="text-sm text-gray-500">
                   Total: {existingImages.length + imageFiles.length} of 200 images
                 </p>
               </div>
@@ -904,14 +989,16 @@ export default function EditLocationForm({ location }: EditLocationFormProps) {
             <div className="flex gap-4">
               <button
                 type="submit"
-                disabled={loading || uploadProgress.uploading}
-                className="bg-[#C41E3A] text-white px-8 py-3 rounded hover:bg-[#a01729] transition-colors font-bold uppercase disabled:opacity-50"
+                disabled={loading || compressing || uploadProgress.uploading}
+                className="bg-[#C41E3A] text-white px-8 py-3 rounded hover:bg-[#a01729] transition-colors font-bold uppercase disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {uploadProgress.uploading
-                  ? `Uploading images (${uploadProgress.current}/${uploadProgress.total})...`
-                  : loading
-                    ? 'Updating...'
-                    : 'Update Location'}
+                {compressing
+                  ? `Compressing images (${compressionProgress.current}/${compressionProgress.total})...`
+                  : uploadProgress.uploading
+                    ? `Uploading images (${uploadProgress.current}/${uploadProgress.total})...`
+                    : loading
+                      ? 'Updating...'
+                      : 'Update Location'}
               </button>
               <Link
                 href="/admin/locations"
