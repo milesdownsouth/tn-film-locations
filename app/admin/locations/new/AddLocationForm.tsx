@@ -58,7 +58,24 @@ export default function AddLocationForm() {
     const files = Array.from(e.target.files || []);
 
     if (files.length + imageFiles.length > 200) {
-      setError('Maximum 200 images allowed per location');
+      setError(
+        `Too many images selected!\n\n` +
+        `You tried to add ${files.length} images, but you already have ${imageFiles.length} selected.\n` +
+        `The maximum is 200 images per location.\n\n` +
+        `What to do: Remove some images first, or select fewer images to add.`
+      );
+      return;
+    }
+
+    // Check for non-image files
+    const invalidFiles = files.filter(f => !f.type.startsWith('image/'));
+    if (invalidFiles.length > 0) {
+      setError(
+        `Some files are not images!\n\n` +
+        `The following files cannot be uploaded because they are not image files:\n` +
+        `${invalidFiles.map(f => `- ${f.name}`).join('\n')}\n\n` +
+        `What to do: Only select image files (JPG, PNG, GIF, etc.)`
+      );
       return;
     }
 
@@ -117,7 +134,15 @@ export default function AddLocationForm() {
 
     } catch (error) {
       console.error('Error processing images:', error);
-      setError('Failed to process images. Please try again.');
+      setError(
+        `Could not process the images!\n\n` +
+        `There was a problem preparing your images for upload.\n\n` +
+        `What to do:\n` +
+        `1. Try selecting fewer images at once (10-20 at a time works best)\n` +
+        `2. Make sure the images are not corrupted\n` +
+        `3. Try refreshing the page and starting over\n\n` +
+        `If this keeps happening, please contact support.`
+      );
     } finally {
       setCompressing(false);
       setCompressionProgress({ current: 0, total: 0 });
@@ -188,6 +213,7 @@ export default function AddLocationForm() {
     setUploadProgress({ current: 0, total: files.length, uploading: true });
 
     for (let i = 0; i < files.length; i += BATCH_SIZE) {
+      const batchNumber = Math.floor(i / BATCH_SIZE) + 1;
       const batch = files.slice(i, i + BATCH_SIZE);
       const batchFormData = new FormData();
       batchFormData.append('locationName', locationName);
@@ -196,14 +222,76 @@ export default function AddLocationForm() {
         batchFormData.append('images', file);
       });
 
-      const response = await fetch('/api/admin/upload-images', {
-        method: 'POST',
-        body: batchFormData,
-      });
+      let response;
+      try {
+        response = await fetch('/api/admin/upload-images', {
+          method: 'POST',
+          body: batchFormData,
+        });
+      } catch (networkError) {
+        throw new Error(
+          `Internet connection problem!\n\n` +
+          `Could not upload images (batch ${batchNumber} of ${totalBatches}).\n\n` +
+          `What to do:\n` +
+          `1. Check your internet connection\n` +
+          `2. Try refreshing the page\n` +
+          `3. Try again in a few minutes\n\n` +
+          `Your form data is still here - just click "Create Location" again once your internet is working.`
+        );
+      }
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `Failed to upload batch ${Math.floor(i / BATCH_SIZE) + 1}`);
+        let errorMessage = '';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || '';
+        } catch {
+          // Could not parse error response
+        }
+
+        if (response.status === 401 || response.status === 403) {
+          throw new Error(
+            `You are not logged in!\n\n` +
+            `Your login session may have expired.\n\n` +
+            `What to do:\n` +
+            `1. Open a new browser tab\n` +
+            `2. Go to the admin login page and log in again\n` +
+            `3. Come back to this tab and try again\n\n` +
+            `Note: Your form data should still be here.`
+          );
+        }
+
+        if (response.status === 413) {
+          throw new Error(
+            `Images are too large!\n\n` +
+            `Even after compression, some images are still too big to upload.\n\n` +
+            `What to do:\n` +
+            `1. Try uploading fewer images at once\n` +
+            `2. Use smaller image files (under 5MB each)\n` +
+            `3. Resize very large images before uploading`
+          );
+        }
+
+        if (response.status >= 500) {
+          throw new Error(
+            `Server problem!\n\n` +
+            `The website's server is having trouble right now (batch ${batchNumber} of ${totalBatches}).\n\n` +
+            `What to do:\n` +
+            `1. Wait a few minutes and try again\n` +
+            `2. If this keeps happening, please contact support\n\n` +
+            `Your form data is still here - just click "Create Location" again later.`
+          );
+        }
+
+        throw new Error(
+          `Could not upload images!\n\n` +
+          `Something went wrong while uploading batch ${batchNumber} of ${totalBatches}.\n` +
+          `${errorMessage ? `Server message: ${errorMessage}\n\n` : '\n'}` +
+          `What to do:\n` +
+          `1. Try refreshing the page and filling out the form again\n` +
+          `2. Try uploading fewer images\n` +
+          `3. If this keeps happening, please contact support`
+        );
       }
 
       const { imageUrls } = await response.json();
@@ -221,13 +309,104 @@ export default function AddLocationForm() {
     setLoading(true);
     setError(null);
 
+    // Validate required fields with helpful messages
+    if (!formData.name.trim()) {
+      setError(
+        `Location Name is required!\n\n` +
+        `Please enter a name for this location at the top of the form.`
+      );
+      setLoading(false);
+      return;
+    }
+
+    if (!formData.description.trim()) {
+      setError(
+        `Description is required!\n\n` +
+        `Please enter a description for this location.`
+      );
+      setLoading(false);
+      return;
+    }
+
+    if (!formData.property_type) {
+      setError(
+        `Property Type is required!\n\n` +
+        `Please select a property type from the dropdown menu.`
+      );
+      setLoading(false);
+      return;
+    }
+
+    if (!formData.address.trim()) {
+      setError(
+        `Street Address is required!\n\n` +
+        `Please enter the street address for this location.`
+      );
+      setLoading(false);
+      return;
+    }
+
+    if (!formData.city.trim()) {
+      setError(
+        `City is required!\n\n` +
+        `Please enter the city where this location is.`
+      );
+      setLoading(false);
+      return;
+    }
+
+    if (!formData.county) {
+      setError(
+        `County is required!\n\n` +
+        `Please select the county from the dropdown menu.`
+      );
+      setLoading(false);
+      return;
+    }
+
+    if (!formData.contact_name.trim()) {
+      setError(
+        `Contact Name is required!\n\n` +
+        `Please enter the name of the property contact person.`
+      );
+      setLoading(false);
+      return;
+    }
+
+    if (!formData.contact_email.trim()) {
+      setError(
+        `Contact Email is required!\n\n` +
+        `Please enter an email address for the property contact.`
+      );
+      setLoading(false);
+      return;
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.contact_email)) {
+      setError(
+        `Invalid Email Address!\n\n` +
+        `The email "${formData.contact_email}" doesn't look right.\n\n` +
+        `Please check that you typed the email correctly (example: john@email.com)`
+      );
+      setLoading(false);
+      return;
+    }
+
+    if (!formData.contact_phone.trim()) {
+      setError(
+        `Contact Phone is required!\n\n` +
+        `Please enter a phone number for the property contact.`
+      );
+      setLoading(false);
+      return;
+    }
+
     try {
       // Step 1: Upload images in batches if there are any
       let imageUrls: string[] = [];
       if (imageFiles.length > 0) {
-        if (!formData.name.trim()) {
-          throw new Error('Please enter a location name before uploading images');
-        }
         imageUrls = await uploadImagesInBatches(imageFiles, formData.name);
       }
 
@@ -248,32 +427,86 @@ export default function AddLocationForm() {
       // Add image URLs as JSON instead of files
       submitData.append('imageUrls', JSON.stringify(imageUrls));
 
-      const response = await fetch('/api/admin/locations', {
-        method: 'POST',
-        body: submitData,
-      });
+      let response;
+      try {
+        response = await fetch('/api/admin/locations', {
+          method: 'POST',
+          body: submitData,
+        });
+      } catch (networkError) {
+        throw new Error(
+          `Internet connection problem!\n\n` +
+          `Could not save the location because of a network error.\n\n` +
+          `What to do:\n` +
+          `1. Check your internet connection\n` +
+          `2. Try refreshing the page\n` +
+          `3. Try again in a few minutes\n\n` +
+          `Note: Your images were already uploaded successfully. Try creating the location again.`
+        );
+      }
 
       if (!response.ok) {
-        let errorMessage = 'Failed to create location';
+        let serverMessage = '';
         try {
           const errorData = await response.json();
-          errorMessage = errorData.error || errorMessage;
+          serverMessage = errorData.error || '';
           if (errorData.details) {
-            errorMessage += ` (${errorData.details})`;
+            serverMessage += ` (${errorData.details})`;
           }
-        } catch (parseError) {
-          const responseText = await response.text();
-          console.error('Non-JSON error response:', responseText);
-          errorMessage = `Server error (${response.status}): Unable to parse response.`;
+        } catch {
+          // Could not parse error
         }
-        throw new Error(errorMessage);
+
+        if (response.status === 401 || response.status === 403) {
+          throw new Error(
+            `You are not logged in!\n\n` +
+            `Your login session may have expired.\n\n` +
+            `What to do:\n` +
+            `1. Open a new browser tab\n` +
+            `2. Go to the admin login page and log in again\n` +
+            `3. Come back to this tab and click "Create Location" again\n\n` +
+            `Your form data should still be here.`
+          );
+        }
+
+        if (response.status === 400) {
+          throw new Error(
+            `Missing or invalid information!\n\n` +
+            `${serverMessage || 'Some required fields are missing or have invalid values.'}\n\n` +
+            `What to do:\n` +
+            `1. Check that all required fields (marked with *) are filled in\n` +
+            `2. Make sure the email address is valid\n` +
+            `3. Make sure numbers are entered correctly (no letters in Year Built, etc.)`
+          );
+        }
+
+        if (response.status >= 500) {
+          throw new Error(
+            `Server problem!\n\n` +
+            `The website's server is having trouble saving your location right now.\n` +
+            `${serverMessage ? `Server message: ${serverMessage}\n\n` : '\n'}` +
+            `What to do:\n` +
+            `1. Wait a few minutes and click "Create Location" again\n` +
+            `2. If this keeps happening, please contact support\n\n` +
+            `Your form data is still here - don't close this page!`
+          );
+        }
+
+        throw new Error(
+          `Could not save the location!\n\n` +
+          `${serverMessage || 'Something went wrong while saving.'}\n\n` +
+          `What to do:\n` +
+          `1. Check that all required fields are filled in correctly\n` +
+          `2. Try clicking "Create Location" again\n` +
+          `3. If this keeps happening, please contact support`
+        );
       }
 
       // Redirect to locations list
       router.push(`/admin/locations`);
     } catch (err) {
       console.error('Error creating location:', err);
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred. Please try again or contact support.');
     } finally {
       setLoading(false);
       setUploadProgress({ current: 0, total: 0, uploading: false });
@@ -296,8 +529,29 @@ export default function AddLocationForm() {
           <h1 className="text-3xl font-semibold text-black mb-6">Add New Location</h1>
 
           {error && (
-            <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-              {error}
+            <div className="mb-6 bg-red-50 border-2 border-red-300 text-red-800 px-6 py-4 rounded-lg shadow-sm">
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0 mt-0.5">
+                  <svg className="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold text-red-800 mb-2">Something went wrong</h3>
+                  <div className="whitespace-pre-line text-sm leading-relaxed">
+                    {error}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setError(null)}
+                  className="flex-shrink-0 text-red-600 hover:text-red-800"
+                >
+                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
             </div>
           )}
 
