@@ -159,98 +159,99 @@ export default function EditLocationForm({ location }: EditLocationFormProps) {
     }
   };
 
-  // Upload images in batches to avoid payload size limits
-  // Vercel has a 4.5MB limit per request, so we keep batches small
-  const uploadImagesInBatches = async (files: File[], locationName: string): Promise<string[]> => {
-    const BATCH_SIZE = 2; // Upload 2 images at a time to stay under 4.5MB limit
+  // Upload images directly to R2 using presigned URLs
+  // This bypasses Vercel's 4.5MB limit completely
+  const uploadImagesDirect = async (files: File[], locationName: string): Promise<string[]> => {
     const allImageUrls: string[] = [];
-    const totalBatches = Math.ceil(files.length / BATCH_SIZE);
-
     setUploadProgress({ current: 0, total: files.length, uploading: true });
 
-    for (let i = 0; i < files.length; i += BATCH_SIZE) {
-      const batchNumber = Math.floor(i / BATCH_SIZE) + 1;
-      const batch = files.slice(i, i + BATCH_SIZE);
-      const batchFormData = new FormData();
-      batchFormData.append('locationName', locationName);
-      batch.forEach((file) => batchFormData.append('images', file));
+    // Upload files concurrently in small groups to balance speed and reliability
+    const CONCURRENT_UPLOADS = 3;
 
-      let response;
-      try {
-        response = await fetch('/api/admin/upload-images', {
-          method: 'POST',
-          body: batchFormData,
-        });
-      } catch (networkError) {
-        throw new Error(
-          `Internet connection problem!\n\n` +
-          `Could not upload images (batch ${batchNumber} of ${totalBatches}).\n\n` +
-          `What to do:\n` +
-          `1. Check your internet connection\n` +
-          `2. Try refreshing the page\n` +
-          `3. Try again in a few minutes\n\n` +
-          `Your changes are still here - just click "Update Location" again once your internet is working.`
-        );
-      }
+    for (let i = 0; i < files.length; i += CONCURRENT_UPLOADS) {
+      const batch = files.slice(i, i + CONCURRENT_UPLOADS);
 
-      if (!response.ok) {
-        let errorMessage = '';
+      const uploadPromises = batch.map(async (file, batchIndex) => {
+        const fileIndex = i + batchIndex;
+
+        // Step 1: Get presigned URL from our API
+        let presignedResponse;
         try {
-          const errorData = await response.json();
-          errorMessage = errorData.error || '';
-        } catch {
-          // Could not parse error response
-        }
-
-        if (response.status === 401 || response.status === 403) {
+          presignedResponse = await fetch('/api/admin/presigned-url', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              locationName,
+              fileName: file.name,
+              contentType: file.type || 'image/jpeg',
+            }),
+          });
+        } catch (networkError) {
           throw new Error(
-            `You are not logged in!\n\n` +
-            `Your login session may have expired.\n\n` +
+            `Internet connection problem!\n\n` +
+            `Could not prepare upload for image ${fileIndex + 1} of ${files.length}.\n\n` +
             `What to do:\n` +
-            `1. Open a new browser tab\n` +
-            `2. Go to the admin login page and log in again\n` +
-            `3. Come back to this tab and try again\n\n` +
-            `Note: Your changes should still be here.`
+            `1. Check your internet connection\n` +
+            `2. Try refreshing the page\n` +
+            `3. Try again in a few minutes\n\n` +
+            `Your changes are still here - just click "Update Location" again.`
           );
         }
 
-        if (response.status === 413) {
+        if (!presignedResponse.ok) {
+          if (presignedResponse.status === 401 || presignedResponse.status === 403) {
+            throw new Error(
+              `You are not logged in!\n\n` +
+              `Your login session may have expired.\n\n` +
+              `What to do:\n` +
+              `1. Open a new browser tab\n` +
+              `2. Go to the admin login page and log in again\n` +
+              `3. Come back to this tab and try again\n\n` +
+              `Note: Your changes should still be here.`
+            );
+          }
           throw new Error(
-            `Images are too large!\n\n` +
-            `Some images are too big to upload.\n\n` +
+            `Could not prepare upload!\n\n` +
+            `The server could not generate an upload link.\n\n` +
             `What to do:\n` +
-            `1. Try uploading fewer images at once\n` +
-            `2. Use smaller image files (under 5MB each)\n` +
-            `3. Resize very large images before uploading`
+            `1. Try refreshing the page\n` +
+            `2. If this keeps happening, please contact support`
           );
         }
 
-        if (response.status >= 500) {
+        const { uploadUrl, publicUrl } = await presignedResponse.json();
+
+        // Step 2: Upload directly to R2 (bypasses Vercel completely)
+        try {
+          const uploadResponse = await fetch(uploadUrl, {
+            method: 'PUT',
+            body: file,
+            headers: {
+              'Content-Type': file.type || 'image/jpeg',
+            },
+          });
+
+          if (!uploadResponse.ok) {
+            throw new Error(`Upload failed with status ${uploadResponse.status}`);
+          }
+        } catch (uploadError) {
           throw new Error(
-            `Server problem!\n\n` +
-            `The website's server is having trouble right now (batch ${batchNumber} of ${totalBatches}).\n\n` +
+            `Could not upload image ${fileIndex + 1}!\n\n` +
+            `The image "${file.name}" failed to upload.\n\n` +
             `What to do:\n` +
-            `1. Wait a few minutes and try again\n` +
-            `2. If this keeps happening, please contact support\n\n` +
-            `Your changes are still here - just click "Update Location" again later.`
+            `1. Check your internet connection\n` +
+            `2. Try again - sometimes uploads fail temporarily\n` +
+            `3. If this keeps happening, the image file might be corrupted`
           );
         }
 
-        throw new Error(
-          `Could not upload images!\n\n` +
-          `Something went wrong while uploading batch ${batchNumber} of ${totalBatches}.\n` +
-          `${errorMessage ? `Server message: ${errorMessage}\n\n` : '\n'}` +
-          `What to do:\n` +
-          `1. Try refreshing the page\n` +
-          `2. Try uploading fewer images\n` +
-          `3. If this keeps happening, please contact support`
-        );
-      }
+        return publicUrl;
+      });
 
-      const { imageUrls } = await response.json();
-      allImageUrls.push(...imageUrls);
+      const batchUrls = await Promise.all(uploadPromises);
+      allImageUrls.push(...batchUrls);
 
-      setUploadProgress({ current: i + batch.length, total: files.length, uploading: true });
+      setUploadProgress({ current: Math.min(i + CONCURRENT_UPLOADS, files.length), total: files.length, uploading: true });
     }
 
     setUploadProgress({ current: files.length, total: files.length, uploading: false });
@@ -409,10 +410,10 @@ export default function EditLocationForm({ location }: EditLocationFormProps) {
     }
 
     try {
-      // Upload new images in batches first (if any)
+      // Upload new images directly to R2 (if any)
       let newImageUrls: string[] = [];
       if (imageFiles.length > 0) {
-        newImageUrls = await uploadImagesInBatches(imageFiles, formData.name);
+        newImageUrls = await uploadImagesDirect(imageFiles, formData.name);
       }
 
       // Prepare form data for location update
