@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Execute query
-    const { data: allLocations, error } = await query;
+    const { data: allLocations, count: totalCount, error } = await query;
 
     if (error) {
       console.error('Database error:', error);
@@ -71,6 +71,7 @@ export async function GET(request: NextRequest) {
     }
 
     let locations = allLocations || [];
+    let count: number;
 
     // If there's a search query, filter client-side across all fields including amenities
     if (searchQuery && locations.length > 0) {
@@ -92,10 +93,12 @@ export async function GET(request: NextRequest) {
 
         return matchesText || matchesAmenity;
       });
+      // For search queries, count is the filtered results length
+      count = locations.length;
+    } else {
+      // For non-search queries, use Supabase's exact count
+      count = totalCount || 0;
     }
-
-    // Calculate count after filtering
-    const count = locations.length;
 
     // Apply pagination to filtered results
     if (searchQuery) {
