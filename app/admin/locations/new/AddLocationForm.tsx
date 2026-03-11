@@ -5,11 +5,11 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import imageCompression from 'browser-image-compression';
-import { PROPERTY_TYPES, TN_COUNTIES } from '@/types/database';
+import { TN_COUNTIES } from '@/types/database';
 
 export default function AddLocationForm() {
   const router = useRouter();
@@ -40,6 +40,16 @@ export default function AddLocationForm() {
   });
 
   const [newAmenity, setNewAmenity] = useState('');
+  const [propertyTypes, setPropertyTypes] = useState<{ name: string; display_name: string }[]>([]);
+
+  useEffect(() => {
+    fetch('/api/admin/property-types')
+      .then(res => res.json())
+      .then(data => {
+        if (data.propertyTypes) setPropertyTypes(data.propertyTypes);
+      })
+      .catch(() => {});
+  }, []);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -603,9 +613,9 @@ export default function AddLocationForm() {
                     className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#C41E3A]"
                   >
                     <option value="">Select type...</option>
-                    {PROPERTY_TYPES.map(type => (
-                      <option key={type} value={type}>
-                        {type.charAt(0).toUpperCase() + type.slice(1)}
+                    {propertyTypes.map(type => (
+                      <option key={type.name} value={type.name}>
+                        {type.display_name}
                       </option>
                     ))}
                   </select>
