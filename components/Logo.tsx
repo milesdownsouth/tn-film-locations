@@ -9,8 +9,8 @@ export function Logo() {
   return (
     <div className="flex items-center w-full h-[60px]">
       <Image
-        src="/TN-Film-Locations_red.png"
-        alt="TN Film Locations"
+        src="/tfl-logo-red4.png"
+        alt="Tennessee Film Locations"
         width={200}
         height={60}
         className="w-full h-[60px] object-contain"

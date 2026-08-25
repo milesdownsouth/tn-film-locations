@@ -110,6 +110,18 @@ export default async function AdminPage() {
             </div>
           </Link>
 
+          <Link href="/admin/property-types">
+            <div className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow cursor-pointer">
+              <h2 className="text-2xl font-semibold text-black mb-2">Property Types</h2>
+              <p className="text-gray-600">
+                Add, edit, or remove property types available when creating locations.
+              </p>
+              <div className="mt-4 text-[#C41E3A] font-bold uppercase">
+                Manage Types →
+              </div>
+            </div>
+          </Link>
+
           <Link href="/admin/settings">
             <div className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow cursor-pointer">
               <h2 className="text-2xl font-semibold text-black mb-2">Site Settings</h2>

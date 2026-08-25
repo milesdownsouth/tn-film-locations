@@ -268,7 +268,7 @@ export default function HomeContent({ featuredLocations }: HomeContentProps) {
           }}
         >
           <h1 ref={heroTitleRef} className="text-4xl md:text-5xl lg:text-6xl font-semibold text-white text-center mb-8">
-            VENUE AND FILM LOCATIONS IN TENNESSEE
+            FILM AND VENUE LOCATIONS IN TENNESSEE
           </h1>
 
           {/* Search Bar */}
@@ -312,7 +312,7 @@ export default function HomeContent({ featuredLocations }: HomeContentProps) {
                 <h3 className="text-xl font-semibold mb-3">FILM & TV PRODUCTIONS</h3>
                 <p className="text-sm text-gray-400">Find your perfect scene</p>
                 <p className="text-sm text-gray-300 mt-4">
-                  From urban streetscapes to rolling countryside, discover locations that bring your script to life. Our curated database includes detailed amenities, permitting information, and high-resolution photos to streamline your location scouting process.
+                  From urban streetscapes to rolling countrysides, discover locations that bring your script to life. Our curated database includes detailed location information, permitting criteria and quality photos to streamline your location scouting process.
                 </p>
               </div>
 
@@ -326,7 +326,7 @@ export default function HomeContent({ featuredLocations }: HomeContentProps) {
                 <h3 className="text-xl font-semibold mb-3">EVENT PROFESSIONALS</h3>
                 <p className="text-sm text-gray-400">Memorable spaces for every occasion</p>
                 <p className="text-sm text-gray-300 mt-4">
-                  Whether you're planning a corporate event, wedding, or special production, explore Tennessee's most distinctive venues. Filter by capacity, style, and amenities to find spaces that exceed your client's expectations.
+                  Whether you are planning a corporate event, wedding, or special production; explore Tennessee's most distinctive venues. Filter by area, style, and amenities to find spaces that exceed your client's expectations.
                 </p>
               </div>
             </div>
@@ -344,7 +344,7 @@ export default function HomeContent({ featuredLocations }: HomeContentProps) {
                 <h3 className="text-xl font-semibold mb-3">COMMERCIAL & PHOTO SHOOTS</h3>
                 <p className="text-sm text-gray-400">Stunning backdrops for any vision</p>
                 <p className="text-sm text-gray-300 mt-4">
-                  Access unique Tennessee venues perfect for commercials, product photography, and brand content. Each location includes comprehensive details about access, lighting conditions, and available facilities to ensure your shoot runs smoothly.
+                  Access unique Tennessee locations perfect for commercials, product photography, and brand content. Contact TFL for assistance with all your location requirements.
                 </p>
               </div>
 

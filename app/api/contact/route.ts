@@ -129,8 +129,9 @@ export async function POST(request: NextRequest) {
         const resend = new Resend(process.env.RESEND_API_KEY);
 
         await resend.emails.send({
-          from: 'TN Film Locations <onboarding@resend.dev>',
+          from: 'info@tennfilmlocations.com',
           to: recipientEmail,
+          replyTo: sanitizedData.email,
           subject: `New Contact Form Submission from ${sanitizedData.name}`,
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">

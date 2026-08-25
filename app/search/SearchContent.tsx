@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Location } from '@/types/database';
@@ -26,6 +26,8 @@ interface LocationsResponse {
   };
 }
 
+const ITEMS_PER_PAGE = 24; // Load 24 items at a time for better UX
+
 export default function SearchContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -33,6 +35,7 @@ export default function SearchContent() {
   const headerRef = useRef<HTMLHeadingElement>(null);
   const filtersRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
 
   const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
   const [city, setCity] = useState(searchParams.get('city') || '');
@@ -41,7 +44,7 @@ export default function SearchContent() {
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>(
     searchParams.get('amenities')?.split(',').filter(Boolean) || []
   );
-  const [currentPage, setCurrentPage] = useState(parseInt(searchParams.get('page') || '1'));
+  const [currentPage, setCurrentPage] = useState(1);
 
   const [locations, setLocations] = useState<Location[]>([]);
   const [availableAmenities, setAvailableAmenities] = useState<string[]>([]);
@@ -50,15 +53,10 @@ export default function SearchContent() {
   const [availableCities, setAvailableCities] = useState<string[]>([]);
   const [showAmenitiesFilter, setShowAmenitiesFilter] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [pagination, setPagination] = useState({
-    page: 1,
-    limit: 12,
-    total: 0,
-    totalPages: 0,
-    hasNext: false,
-    hasPrev: false,
-  });
+  const [hasMore, setHasMore] = useState(true);
+  const [totalCount, setTotalCount] = useState(0);
 
   // Fetch available filter options on mount
   useEffect(() => {
@@ -88,8 +86,12 @@ export default function SearchContent() {
   };
 
   // Fetch locations from API
-  const fetchLocations = async () => {
-    setLoading(true);
+  const fetchLocations = useCallback(async (page: number, append: boolean = false) => {
+    if (page === 1) {
+      setLoading(true);
+    } else {
+      setLoadingMore(true);
+    }
     setError(null);
 
     try {
@@ -99,8 +101,8 @@ export default function SearchContent() {
       if (county) params.set('county', county);
       if (propertyType) params.set('property_type', propertyType);
       if (selectedAmenities.length > 0) params.set('amenities', selectedAmenities.join(','));
-      params.set('page', currentPage.toString());
-      params.set('limit', '12');
+      params.set('page', page.toString());
+      params.set('limit', ITEMS_PER_PAGE.toString());
 
       const response = await fetch(`/api/locations?${params.toString()}`);
 
@@ -109,20 +111,50 @@ export default function SearchContent() {
       }
 
       const data: LocationsResponse = await response.json();
-      setLocations(data.locations);
-      setPagination(data.pagination);
+
+      if (append) {
+        setLocations(prev => [...prev, ...data.locations]);
+      } else {
+        setLocations(data.locations);
+      }
+
+      setTotalCount(data.pagination.total);
+      setHasMore(data.pagination.hasNext);
+      setCurrentPage(page);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
       console.error('Error fetching locations:', err);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
-  };
+  }, [searchQuery, city, county, propertyType, selectedAmenities]);
 
-  // Fetch locations when filters or page changes
+  // Initial fetch and refetch when filters change
   useEffect(() => {
-    fetchLocations();
-  }, [searchQuery, city, county, propertyType, selectedAmenities, currentPage]);
+    setLocations([]);
+    setCurrentPage(1);
+    setHasMore(true);
+    fetchLocations(1, false);
+  }, [searchQuery, city, county, propertyType, selectedAmenities]);
+
+  // Infinite scroll with IntersectionObserver
+  useEffect(() => {
+    if (!loadMoreRef.current || loading || loadingMore || !hasMore) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loadingMore) {
+          fetchLocations(currentPage + 1, true);
+        }
+      },
+      { threshold: 0.1, rootMargin: '100px' }
+    );
+
+    observer.observe(loadMoreRef.current);
+
+    return () => observer.disconnect();
+  }, [currentPage, hasMore, loading, loadingMore, fetchLocations]);
 
   // Animations
   useEffect(() => {
@@ -150,17 +182,23 @@ export default function SearchContent() {
     }
   }, []);
 
-  // Animate location cards when they change
+  // Animate new location cards when they load
   useEffect(() => {
     if (!loading && gridRef.current && locations.length > 0) {
-      const cards = gridRef.current.children;
-      gsap.from(cards, {
-        opacity: 0,
-        y: 30,
-        duration: 0.6,
-        stagger: 0.08,
-        ease: 'power2.out',
-      });
+      // Only animate newly added cards
+      const cards = gridRef.current.querySelectorAll('.location-card:not(.animated)');
+      if (cards.length > 0) {
+        gsap.from(cards, {
+          opacity: 0,
+          y: 30,
+          duration: 0.6,
+          stagger: 0.05,
+          ease: 'power2.out',
+          onComplete: () => {
+            cards.forEach(card => card.classList.add('animated'));
+          }
+        });
+      }
     }
   }, [locations, loading]);
 
@@ -172,14 +210,12 @@ export default function SearchContent() {
     if (county) params.set('county', county);
     if (propertyType) params.set('property_type', propertyType);
     if (selectedAmenities.length > 0) params.set('amenities', selectedAmenities.join(','));
-    if (currentPage > 1) params.set('page', currentPage.toString());
 
     router.push(`/search?${params.toString()}`, { scroll: false });
   };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    setCurrentPage(1);
     updateURL();
   };
 
@@ -187,7 +223,6 @@ export default function SearchContent() {
     filterType: 'city' | 'county' | 'propertyType',
     value: string
   ) => {
-    setCurrentPage(1);
     if (filterType === 'city') setCity(value);
     if (filterType === 'county') setCounty(value);
     if (filterType === 'propertyType') setPropertyType(value);
@@ -195,7 +230,6 @@ export default function SearchContent() {
   };
 
   const handleAmenityToggle = (amenity: string) => {
-    setCurrentPage(1);
     setSelectedAmenities(prev =>
       prev.includes(amenity)
         ? prev.filter(a => a !== amenity)
@@ -203,10 +237,11 @@ export default function SearchContent() {
     );
   };
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-    updateURL();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+  // Manual load more button (backup for intersection observer)
+  const handleLoadMore = () => {
+    if (hasMore && !loadingMore) {
+      fetchLocations(currentPage + 1, true);
+    }
   };
 
   return (
@@ -277,7 +312,7 @@ export default function SearchContent() {
             ))}
           </select>
 
-          {/* Amenities Filter Button */}
+          {/* Features Filter Button */}
           <button
             type="button"
             onClick={() => setShowAmenitiesFilter(!showAmenitiesFilter)}
@@ -287,7 +322,7 @@ export default function SearchContent() {
                 : 'border-gray-300 text-gray-700 hover:border-[#C41E3A] hover:text-[#C41E3A]'
             }`}
           >
-            Amenities {selectedAmenities.length > 0 && `(${selectedAmenities.length})`}
+            Features {selectedAmenities.length > 0 && `(${selectedAmenities.length})`}
           </button>
 
           {(searchQuery || city || county || propertyType || selectedAmenities.length > 0) && (
@@ -308,10 +343,10 @@ export default function SearchContent() {
           )}
         </div>
 
-        {/* Amenities Dropdown */}
+        {/* Features Dropdown */}
         {showAmenitiesFilter && availableAmenities.length > 0 && (
           <div className="mb-8 bg-gray-50 rounded-lg p-6 border border-gray-200">
-            <h3 className="text-lg font-semibold text-black mb-4">Filter by Amenities</h3>
+            <h3 className="text-lg font-semibold text-black mb-4">Filter by Features</h3>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
               {availableAmenities.map((amenity) => (
                 <label
@@ -356,7 +391,13 @@ export default function SearchContent() {
         {/* Results Count */}
         {!loading && (
           <div className="text-center mb-6 text-gray-600">
-            {pagination.total} location{pagination.total !== 1 ? 's' : ''} found
+            {totalCount > 0 ? (
+              <>
+                Showing {locations.length} of {totalCount} location{totalCount !== 1 ? 's' : ''}
+              </>
+            ) : (
+              '0 locations found'
+            )}
           </div>
         )}
 
@@ -372,7 +413,7 @@ export default function SearchContent() {
           <div className="text-center py-12">
             <p className="text-red-600 font-bold mb-2">Error: {error}</p>
             <button
-              onClick={fetchLocations}
+              onClick={() => fetchLocations(1, false)}
               className="bg-[#C41E3A] text-white px-6 py-2 rounded hover:bg-[#a01729] transition-colors"
             >
               Try Again
@@ -392,12 +433,13 @@ export default function SearchContent() {
               <div ref={gridRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
                 {locations.map((location) => (
                   <Link key={location.id} href={`/locations/${location.id}`}>
-                    <div className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow cursor-pointer">
+                    <div className="location-card bg-white rounded-lg shadow hover:shadow-lg transition-shadow cursor-pointer">
                       <div className="relative h-64 rounded-t-lg overflow-hidden bg-gray-200">
                         {location.images && location.images.length > 0 ? (
                           <img
                             src={location.images[0]}
                             alt={location.name}
+                            loading="lazy"
                             className="w-full h-full object-cover"
                           />
                         ) : (
@@ -419,46 +461,29 @@ export default function SearchContent() {
               </div>
             )}
 
-            {/* Pagination */}
-            {pagination.totalPages > 1 && (
-              <div className="flex flex-col items-center gap-6">
-                {pagination.hasNext && (
+            {/* Infinite Scroll Trigger / Load More */}
+            {hasMore && (
+              <div ref={loadMoreRef} className="flex flex-col items-center gap-4 py-8">
+                {loadingMore ? (
+                  <div className="flex items-center gap-3">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#C41E3A]"></div>
+                    <span className="text-gray-600">Loading more locations...</span>
+                  </div>
+                ) : (
                   <button
-                    onClick={() => handlePageChange(currentPage + 1)}
+                    onClick={handleLoadMore}
                     className="bg-[#C41E3A] text-white px-8 py-3 rounded hover:bg-[#a01729] transition-colors font-bold uppercase"
                   >
-                    NEXT PAGE
+                    LOAD MORE
                   </button>
                 )}
-                <div className="flex gap-4">
-                  {Array.from({ length: Math.min(pagination.totalPages, 5) }, (_, i) => {
-                    // Show first 5 pages or pages around current page
-                    let pageNum;
-                    if (pagination.totalPages <= 5) {
-                      pageNum = i + 1;
-                    } else if (currentPage <= 3) {
-                      pageNum = i + 1;
-                    } else if (currentPage >= pagination.totalPages - 2) {
-                      pageNum = pagination.totalPages - 4 + i;
-                    } else {
-                      pageNum = currentPage - 2 + i;
-                    }
+              </div>
+            )}
 
-                    return (
-                      <button
-                        key={pageNum}
-                        onClick={() => handlePageChange(pageNum)}
-                        className={`w-10 h-10 rounded ${
-                          currentPage === pageNum
-                            ? 'bg-[#C41E3A] text-white'
-                            : 'bg-gray-200 text-black hover:bg-gray-300'
-                        } font-bold transition-colors`}
-                      >
-                        {pageNum}
-                      </button>
-                    );
-                  })}
-                </div>
+            {/* End of Results */}
+            {!hasMore && locations.length > 0 && (
+              <div className="text-center py-8 text-gray-500">
+                Showing all {totalCount} locations
               </div>
             )}
           </>

@@ -4,6 +4,7 @@
  */
 
 import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import sharp from 'sharp';
 
 // Initialize R2 client (R2 is S3-compatible)
@@ -106,4 +107,55 @@ export async function deleteImage(imageUrl: string): Promise<void> {
 export async function deleteImages(imageUrls: string[]): Promise<void> {
   const deletePromises = imageUrls.map(url => deleteImage(url));
   await Promise.all(deletePromises);
+}
+
+/**
+ * Generate a presigned URL for direct browser upload to R2
+ * This bypasses serverless function limits by allowing direct uploads
+ *
+ * @param locationName - The location name (for organizing files)
+ * @param fileName - Original filename
+ * @param contentType - MIME type of the file
+ * @returns Object with uploadUrl (presigned) and publicUrl (final URL)
+ */
+export async function generatePresignedUploadUrl(
+  locationName: string,
+  fileName: string,
+  contentType: string
+): Promise<{ uploadUrl: string; publicUrl: string; key: string }> {
+  const client = getR2Client();
+  const timestamp = Date.now();
+  const randomId = Math.random().toString(36).substring(2, 8);
+
+  // Sanitize location name for use in path
+  const sanitizedLocationName = locationName
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+    .substring(0, 50);
+
+  // Get original filename without extension, sanitize it
+  const originalName = fileName
+    .replace(/\.[^/.]+$/, '')
+    .replace(/[^a-zA-Z0-9-_]/g, '-')
+    .substring(0, 50);
+
+  // Determine file extension based on content type
+  const extension = contentType === 'image/webp' ? 'webp'
+    : contentType === 'image/png' ? 'png'
+    : 'jpg';
+
+  const key = `locations/${sanitizedLocationName}/${timestamp}-${randomId}-${originalName}.${extension}`;
+
+  const command = new PutObjectCommand({
+    Bucket: process.env.R2_BUCKET_NAME!,
+    Key: key,
+    ContentType: contentType,
+  });
+
+  // Generate presigned URL valid for 10 minutes
+  const uploadUrl = await getSignedUrl(client, command, { expiresIn: 600 });
+  const publicUrl = `${process.env.R2_PUBLIC_URL}/${key}`;
+
+  return { uploadUrl, publicUrl, key };
 }

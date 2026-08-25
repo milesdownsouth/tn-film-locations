@@ -3,13 +3,35 @@ import { createClient } from '@/lib/supabase/server';
 import { requireAdmin } from '@/lib/auth-middleware';
 import { uploadImages } from '@/lib/cloudflare-r2';
 
+// Configure route to handle larger file uploads (50MB limit for multiple images)
+export const runtime = 'nodejs';
+export const maxDuration = 60; // 60 seconds max
+
 export async function POST(request: NextRequest) {
   // Check admin authentication
   const { error: authError, user } = await requireAdmin();
-  if (authError) return authError;
+  if (authError) {
+    console.error('Admin auth check failed');
+    return authError;
+  }
+
+  console.log('Admin auth passed for user:', user?.id);
 
   try {
     const formData = await request.formData();
+
+    // Parse amenities with better error handling
+    let amenities: string[] = [];
+    try {
+      const amenitiesStr = formData.get('amenities') as string || '[]';
+      amenities = JSON.parse(amenitiesStr);
+    } catch (parseError) {
+      console.error('Error parsing amenities JSON:', parseError);
+      return NextResponse.json(
+        { error: 'Invalid amenities format', details: parseError instanceof Error ? parseError.message : 'Unknown error' },
+        { status: 400 }
+      );
+    }
 
     // Extract location data
     const locationData = {
@@ -22,7 +44,7 @@ export async function POST(request: NextRequest) {
       year_built: formData.get('year_built') ? parseInt(formData.get('year_built') as string) : null,
       square_footage: formData.get('square_footage') ? parseInt(formData.get('square_footage') as string) : null,
       parking: formData.get('parking') as string || null,
-      amenities: JSON.parse(formData.get('amenities') as string || '[]'),
+      amenities: amenities,
       contact_name: formData.get('contact_name') as string,
       contact_email: formData.get('contact_email') as string,
       contact_phone: formData.get('contact_phone') as string,
@@ -41,25 +63,38 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Extract image files
-    const imageFiles: File[] = [];
-    for (const [key, value] of formData.entries()) {
-      if (key === 'images' && value instanceof File) {
-        imageFiles.push(value);
+    // Get image URLs (either pre-uploaded via batch endpoint, or upload now)
+    let imageUrls: string[] = [];
+
+    // First check for pre-uploaded image URLs (from batch upload)
+    const imageUrlsJson = formData.get('imageUrls') as string;
+    if (imageUrlsJson) {
+      try {
+        imageUrls = JSON.parse(imageUrlsJson);
+      } catch (e) {
+        console.error('Error parsing imageUrls:', e);
       }
     }
 
-    // Upload images to R2
-    let imageUrls: string[] = [];
-    if (imageFiles.length > 0) {
-      try {
-        imageUrls = await uploadImages(imageFiles, locationData.name);
-      } catch (uploadError) {
-        console.error('Image upload error:', uploadError);
-        return NextResponse.json(
-          { error: 'Failed to upload images' },
-          { status: 500 }
-        );
+    // If no pre-uploaded URLs, check for image files (backwards compatibility)
+    if (imageUrls.length === 0) {
+      const imageFiles: File[] = [];
+      for (const [key, value] of formData.entries()) {
+        if (key === 'images' && value instanceof File) {
+          imageFiles.push(value);
+        }
+      }
+
+      if (imageFiles.length > 0) {
+        try {
+          imageUrls = await uploadImages(imageFiles, locationData.name);
+        } catch (uploadError) {
+          console.error('Image upload error:', uploadError);
+          return NextResponse.json(
+            { error: 'Failed to upload images' },
+            { status: 500 }
+          );
+        }
       }
     }
 

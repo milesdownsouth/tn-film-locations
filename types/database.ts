@@ -85,25 +85,8 @@ export type UpdateLocationInput = Partial<Omit<Location, 'id' | 'created_at' | '
   id: string;
 };
 
-// Property types for filtering
-export const PROPERTY_TYPES = [
-  'warehouse',
-  'mansion',
-  'forest',
-  'office',
-  'farm',
-  'urban',
-  'retail',
-  'industrial',
-  'residential',
-  'park',
-  'waterfront',
-  'historic',
-  'modern',
-  'other',
-] as const;
-
-export type PropertyType = typeof PROPERTY_TYPES[number];
+// Property types are now managed in the database via the property_types table
+// and editable from the admin panel at /admin/property-types
 
 // Tennessee counties for filtering
 export const TN_COUNTIES = [
@@ -134,7 +117,7 @@ export type TNCounty = typeof TN_COUNTIES[number];
 export interface LocationFilters {
   city?: string;
   county?: TNCounty;
-  property_type?: PropertyType;
+  property_type?: string;
   year_built_min?: number;
   year_built_max?: number;
   square_footage_min?: number;

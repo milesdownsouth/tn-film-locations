@@ -37,25 +37,38 @@ export async function PATCH(
     // Get existing images that should be kept
     const existingImages = JSON.parse(formData.get('existing_images') as string || '[]');
 
-    // Extract new image files
-    const imageFiles: File[] = [];
-    for (const [key, value] of formData.entries()) {
-      if (key === 'images' && value instanceof File) {
-        imageFiles.push(value);
+    // Get new image URLs (either pre-uploaded via batch endpoint, or upload now)
+    let newImageUrls: string[] = [];
+
+    // First check for pre-uploaded image URLs (from batch upload)
+    const newImageUrlsJson = formData.get('newImageUrls') as string;
+    if (newImageUrlsJson) {
+      try {
+        newImageUrls = JSON.parse(newImageUrlsJson);
+      } catch (e) {
+        console.error('Error parsing newImageUrls:', e);
       }
     }
 
-    // Upload new images to R2
-    let newImageUrls: string[] = [];
-    if (imageFiles.length > 0) {
-      try {
-        newImageUrls = await uploadImages(imageFiles, locationData.name);
-      } catch (uploadError) {
-        console.error('Image upload error:', uploadError);
-        return NextResponse.json(
-          { error: 'Failed to upload images' },
-          { status: 500 }
-        );
+    // If no pre-uploaded URLs, check for image files (backwards compatibility)
+    if (newImageUrls.length === 0) {
+      const imageFiles: File[] = [];
+      for (const [key, value] of formData.entries()) {
+        if (key === 'images' && value instanceof File) {
+          imageFiles.push(value);
+        }
+      }
+
+      if (imageFiles.length > 0) {
+        try {
+          newImageUrls = await uploadImages(imageFiles, locationData.name);
+        } catch (uploadError) {
+          console.error('Image upload error:', uploadError);
+          return NextResponse.json(
+            { error: 'Failed to upload images' },
+            { status: 500 }
+          );
+        }
       }
     }
 
