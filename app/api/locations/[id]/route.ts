@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { toPublicLocation } from '@/lib/public-location';
 
 export async function GET(
   request: NextRequest,
@@ -52,7 +53,7 @@ export async function GET(
       .limit(4);
 
     return NextResponse.json({
-      location,
+      location: toPublicLocation(location),
       relatedLocations: relatedLocations || [],
     });
   } catch (error) {

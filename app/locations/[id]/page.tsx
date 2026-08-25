@@ -601,12 +601,6 @@ export default function LocationDetailPage({ params }: { params: Promise<{ id: s
                 <p className="text-gray-700">{location.parking}</p>
               </div>
             )}
-            {location.address && (
-              <div>
-                <p className="text-sm font-bold text-black uppercase mb-2">ADDRESS</p>
-                <p className="text-gray-700">{location.address}</p>
-              </div>
-            )}
           </div>
         </div>
       </section>

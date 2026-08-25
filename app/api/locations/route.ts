@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { toPublicLocations } from '@/lib/public-location';
 
 export async function GET(request: NextRequest) {
   try {
@@ -81,7 +82,6 @@ export async function GET(request: NextRequest) {
         const matchesText =
           location.name?.toLowerCase().includes(searchLower) ||
           location.description?.toLowerCase().includes(searchLower) ||
-          location.address?.toLowerCase().includes(searchLower) ||
           location.city?.toLowerCase().includes(searchLower) ||
           location.county?.toLowerCase().includes(searchLower) ||
           location.property_type?.toLowerCase().includes(searchLower);
@@ -111,7 +111,7 @@ export async function GET(request: NextRequest) {
     const totalPages = Math.ceil(count / limit);
 
     return NextResponse.json({
-      locations: locations || [],
+      locations: toPublicLocations(locations || []),
       pagination: {
         page,
         limit,

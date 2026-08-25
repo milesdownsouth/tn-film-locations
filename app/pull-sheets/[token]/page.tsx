@@ -5,6 +5,7 @@
 
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { toPublicLocations } from '@/lib/public-location';
 import PublicPullSheetView from './PublicPullSheetView';
 
 export default async function PublicPullSheetPage({ params }: { params: Promise<{ token: string }> }) {
@@ -31,7 +32,9 @@ export default async function PublicPullSheetPage({ params }: { params: Promise<
     redirect('/');
   }
 
-  const locations = pullSheet.pull_sheet_locations?.map((psl: any) => psl.locations) || [];
+  const locations = toPublicLocations(
+    pullSheet.pull_sheet_locations?.map((psl: any) => psl.locations) || []
+  );
 
   return <PublicPullSheetView pullSheet={{ ...pullSheet, locations }} />;
 }
